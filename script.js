@@ -734,6 +734,8 @@ let index = remainingCardsArr.length - 1
 let pickIndex = pickCardTracker.length - 1
 console.log('pick index')
 console.log(pickIndex)
+console.log('remain card array index')
+console.log(index)
 console.log('pick tracker')
 console.log(pickCardTracker)
 console.log('tracking object')
@@ -757,26 +759,29 @@ wastArr.unshift(remainingCardsArr[index]);
 // pop the item out of remain array since it is now in wastArr
 remainingCardsArr.pop() 
 
-// reset card's group elements number to '1' 
-pickCardTracker[pickCardTracker.length -1].primary_card.group_elements = ''
 
+// CREATE A NEW OBJECT FOR WASTE ARRAY AND BREADCRUMB
+let newFlippedObject = {
 
-// set card's move order to breadcrumb length
-pickCardTracker[pickCardTracker.length -1].when_moved = breadcrumbArray.length + 1
+  primary_card: {
+    card:pickCardTracker[pickCardTracker.length -1].primary_card.card,
+    origin:'pick-pile',
+    destination:'waste-pile',
+    group_elements:''
+  }, 
+  
+  total_selected: '', 
+when_flipped: breadcrumbArray.length + 1, 
+when_moved: breadcrumbArray.length + 1,
+  principal_origin: 'pick-pile'
 
-// set the card's when flipped order to the breadcrumb length
-pickCardTracker[pickCardTracker.length -1].when_flipped = breadcrumbArray.length + 1
+}
 
-
-// write the destination on the card object
-pickCardTracker[pickCardTracker.length -1].primary_card.destination = 'waste-pile'
-// write the destination on the card object
-pickCardTracker[pickCardTracker.length -1].primary_card.origin = 'pick-pile'
-// push card to breadcrumb
-breadcrumbArray.push(pickCardTracker[pickCardTracker.length -1])
+// push new card object to breadcrumb
+breadcrumbArray.push(newFlippedObject)
 
 // unshift card object to waste pile array
-wasteCardTracker.unshift(pickCardTracker[pickCardTracker.length -1])
+wasteCardTracker.unshift(newFlippedObject)
 
 // pop object from pickcard tracker
 pickCardTracker.pop()
@@ -873,6 +878,8 @@ console.log(object)
   
   
   breadcrumbArray.push(newPickObject)
+  console.log('object just pushed to breadcrumb')
+  console.log(newPickObject)
   pickCardTracker.push(newPickObject)
   // so now the new objects pushed to pick array are also pushed to breadcrumb array
 
@@ -1198,8 +1205,6 @@ storeBreadcrumb = []
   
   console.log('this card came from a pick pile')
 
-  // first thing to do is to check the breadcrumb object to see what primary_card.card value is.  If the value is a number then just the one card was moved, but if the value is the string 'all pick pile'
-
   // NOTE: PICK PILE HAS NO PHYSICAL LOCATION, ONLY THE CONTENTS OF THE TRACKING ARRAY REFER TO CARDS ON THE PICK PILE. 
 
   // SINGLE CARD UNDO - since pick cards are taken from the end of the pick array, and unshifted to the beginning of the waste array, then the reverse requires the zero position waste array object to be pushed to pick array; a new object can be created and out of the zero position object on the waste array, and then pushed to pick array, and the waste array can be shifted.  Then the current waste array first child can be removed, but returning the card that was there is a little bit harder.  Will probably have to create a new card object to append.  The template for this is found in the remain flip function I think.  Since the tracking object for the previous waste pile top card doesn't get changed after the card is covered by another on the waste pile, there's no need to create a new object, the one at position zero refers to the last move of the appended card. 
@@ -1314,8 +1319,20 @@ let newCardElement = document.createElement('img')
 console.log(wastePile)
   if(wastePile.childNodes.length > 0){
     wastePile.removeChild(wastePile.firstChild)
+      // create the 'no more cards' element for wastepile
+  let newDefaultImage = document.createElement('img')
+  // SET SOURCE AS 'NO MORE CARDS' IMAGE
+  newDefaultImage.src = 'images/no more cards img.png';
+  // ADD CLASSES FOR STYLINGS
+  newDefaultImage.classList.add('cardElWaste')
+  newDefaultImage.classList.add('card-border')
+  // APPEND IMAGE
+  wastePile.append(newDefaultImage)
   }
-  
+
+  remainPile.firstChild.src =  `images/pick_reset.png`;
+
+
 }
 
 console.log('waste pile')
@@ -1416,7 +1433,7 @@ if(destinationPileName.includes('foundation')){
 } // DESTINATION TYPE: PICK PILE
 else if(destinationPileName.includes('pick')){
 
-  // when destination is pick pile, this means all cards on waste pile were simultaneously moved back to pick pile. The number of cards transferred is in the group elements property of all cards. 
+  // when destination is pick pile, this means all cards on waste pile were simultaneously moved back to pick pile. The number of cards transferred is in the group elements property of all cards. JUST REALIZED THIS IS NOT STRICTLY TRUE: when a single card is being undone on the waste pile, it also has a destination of pick pile
 
   console.log('all waste pile contents objects breadcrumb')
   console.log(lastBreadcrumb)
@@ -1490,10 +1507,21 @@ pickCardTracker = []
 
 // for the multiple card remove change the source of the pick pile image to card back again
 remainPile.firstChild.src = `images/backgnd.jpg` 
-// the waste tracker array's zero position object's 'primary_card.card' value can be used to get the corresponding card image for display. 
+// the waste tracker array's zero position object's 'primary_card.card' value can be used to get the corresponding card image for display.  AN IMAGE NEEDS TO BE CREATED WHEN THERE IS NO CHILD IN THE WASTE ARRAY
 
-wastePile.firstChild.src = `images/${wasteCardTracker[0].primary_card.card}.png`
+let newWasteCard = document.createElement('img')
+// SET SOURCE AS 'NO MORE CARDS' IMAGE
+newWasteCard.src = `images/${wasteCardTracker[0].primary_card.card}.png`;
+// ADD CLASSES FOR STYLINGS
+newWasteCard.classList.add('cardElWaste')
+newWasteCard.classList.add('card-border')
+// APPEND IMAGE
+wastePile.append(newWasteCard)
 
+if(wastePile.childNodes.length > 1){
+  // if there is more than one card on the waste pile after this drop then remove the first child
+  wastePile.removeChild(wastePile.firstChild)
+}
     
 }// DESTINATION TYPE: DROP PILE
 else{ 
