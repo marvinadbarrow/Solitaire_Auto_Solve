@@ -15,7 +15,8 @@ let cardPack = [
   "45.png","46.png","47.png","48.png",
   "49.png","50.png","51.png","52.png",]
 
-
+let cardFlip = new Audio('sounds/card_flip.mp3')
+let emptyPile = new Audio('sounds/empty_pile_sound.mp3')
   // FETCHING AUTO SOLVE SCENARIO LAYOUT FOR TESTING SOLVE BUTTON - 
 
   // variables for foundation trackers and drop pile trackers in solve scenario
@@ -579,9 +580,14 @@ wastePile.classList.add('card-size'); // make waste pile same size as the size o
 // checks that the top card of any drop pile is face down, and if so, will flip it to face up. 
 const   flipCard = (flipThis, index) =>{
 // check that the received card is not draggable
-   flipThis.setAttribute('draggable',true);
+
+setTimeout(() => {
+  flipThis.setAttribute('draggable',true);
   let id = flipThis.id
   flipThis.src = `images/${id}`
+  cardFlip.play()
+}, 350);
+
 
 // code for locating the tracking object and assigning a value to its when_flipped property
 
@@ -798,6 +804,7 @@ wastePile.removeChild(wastePile.firstChild)
 }
 // append created card
 wastePile.appendChild(testCard)
+cardFlip.play()
 // add dragstart and dragend event listeners
 testCard.addEventListener('dragstart', dragStart)
 testCard.addEventListener('dragend', dragEnd)
@@ -1342,6 +1349,35 @@ console.log(pickCardTracker)
 console.log('breadcrumbs')
 console.log(breadcrumbArray)  
 
+// when there are no cards on the waste pile, if, for each object in the tracking array, the object's destination property is an empty string, that indicates the the undo of the current waste card back to pick pile has returned to piles to the initial distribution state where no pick cards have been flipped. So return pick pile image to 'card back', and use an image (which I will create) that says, start card pick, or similar
+if(wasteCardTracker.length < 1){
+  if(pickCardTracker.length > 0){
+    let testValue = 0;
+    pickCardTracker.forEach(object => {
+      if(object.primary_card.destination == ''){
+        testValue ++;
+      }else{
+        testValue = testValue
+      }
+    });
+
+// after the loop, if testValue = pick array length then all cards are back in pick array in their initial distribution state; so render pick pile and waste pile images to reflect that state.
+if(testValue === pickCardTracker.length){
+
+  if(remainPile.firstChild){
+    remainPile.firstChild.src = 'images/back.png'
+  }
+  
+  if(wastePile.firstChild){
+    wastePile.firstChild.src = 'images/reveal_deck_card.png'; 
+    wastePile.firstChild.style.cssText = 'outline: 5px solid yellow; outline-offset: 3px;'
+  }
+emptyPile.play()
+}
+
+  }
+}
+
 }else if(originPileName.includes('waste')){
   // one destination; pick pile
     console.log('this card came from a waste pile')
@@ -1622,13 +1658,14 @@ allPileElements.forEach((pile, pileIndex) =>{
     if(originPileElement.lastChild){
 
         // ORIGIN PILE END CARD
- originLastCardElement = pile.lastChild
+ originLastCardElement = originPileElement.lastChild
       console.log('originLastCardElement')
       console.log(originLastCardElement)
 
 // ORIGIN TRACKER ARRAY
     console.log('origin pile tracker')
     endCardPileTracker = dropPileTracker[pileIndex]
+    console.log(endCardPileTracker)
 // END CARD TRACKER OBJECT
     console.log('left behind card')
     endCardObject = endCardPileTracker[endCardPileTracker.length - 1]
@@ -1736,7 +1773,7 @@ storeBreadcrumb = []
 }else{ // DESTINATION TYPE: DROP PILE
   console.log('destination is a drop pile')
 
-  // NOTE: when origin and destination are both drop pile, since multiple cards can be moved between drop piies, there needs to be a check for the movement of multiple cards, and if true, these need to be handled using extra steps. since ALL cards need to be edited to represent the card states prior to their movement, and all need to be transferred back to the origin drop pile. Their tracking objects also need to be returned to the origin drop pile tracker. also, all of their breadcrumb objects will need to be removed. 
+  // NOTE: when origin and destination are both drop pile, since multiple cards can be moved between drop piies, there needs to be a check for the movement of multiple cards, and if true, these need to be handled using extra steps. since ALL cards need to be edited to represent their states prior to their movement, and all need to be transferred back to the origin drop pile. Their tracking objects also need to be returned to the origin drop pile tracker. also, all of their breadcrumb objects will need to be removed. 
 
 
 
@@ -1750,41 +1787,45 @@ let groupStartCard;
   
   //DROP PILE INDEX (tracker index is the same)
       dropIndex = pileIndex
-    
+    // DESTINATION PILE ELEMENT
       destinationPileElement = pile;
 
-// 'DROP CARD TRACKER ARRAY
+// 'DESTINATION PILE TRACKING ARRAY
 console.log('drop pile tracker')
 movedCardTracker = dropPileTracker[pileIndex]
-console.log('drop card object')
+console.log(movedCardTracker)
 
+
+// DROPPED CARD OBJECT AT THE END OF TRACKING ARRAY - note: if multiple cards are dropped then this is the last card in the selected group - otherwise it's just the single card that was selected. 
 MovedCardObject = movedCardTracker[movedCardTracker.length - 1]
+console.log(' last drop card object of the group')
+console.log(MovedCardObject)
 
-
-// GET GROUP ELEMENTS VALUE
+// GET GROUP ELEMENTS VALUE ON THE CARD - the number of cards dragged
 groupElementsValue = MovedCardObject.primary_card.group_elements
-// GET VALUE OBJECT TYPE
+// GET THE OBJECT TYPE OF THE VALUE - the type will either be an empty string or a number (multiple cards have a number, single cards an empty string)
 let valueType = typeof groupElementsValue
 console.log('group elements kind')
-console.log(valueType)
+console.log(valueType + ': ' + groupElementsValue)
       //-----------------------------------------------
 
-    
 
-    
-    
-    
-    if(valueType == 'number'){ // MULTIPLE CARD TRANSFER DROP PILE TO DROP PILE
-
-  
+    // MULTIPLE CARD TRANSFER; DROP PILE TO DROP PILE
+    if(valueType == 'number'){ 
+  console.log('group drag: number of cards dragged')
+  console.log(groupElementsValue)
 
 // FIRST DROP CARD OBJECT
-// if single card was moved then the drop object at the end of destination tracker; but if multiple cards were transferred then use movedCardTracker.length - groupElementsValue as the index to get the first card object since that object has the 'when_moved' property. Below is a variation of the movedCardObject used to make an orientation check with the origin pile end card object.  
+// if single card was moved then the drop object is at the end of destination tracker; but if multiple cards were transferred then use movedCardTracker.length - groupElementsValue as the index to get the first card object.  
 
-let firstCardIndex = movedCardTracker.length - groupElementsValue
-let groupMoveFirstCardObject = movedCardTracker[firstCardIndex]
+// GET PRIMARY CARD INDEX
+let primaryCardIndex = movedCardTracker.length - groupElementsValue
+// GET PRIMARY CARD OBJECT - highest numbered card
+let groupMoveFirstCardObject = movedCardTracker[primaryCardIndex]
+console.log('checking if the below index is the same as the one logged on line 1820 because the pile tracker length have the same value as the drop pile childNodes length')
+console.log(movedCardTracker.length)
 
-console.log('MovedCardObject')
+console.log('primary card (highest numbered card)')
 console.log(groupMoveFirstCardObject)
 console.log('group elements object type')
 
@@ -1793,73 +1834,92 @@ console.log('group elements object type')
       console.log('number of cards to undo')
       console.log(groupElementsValue)    
       console.log(groupMoveFirstCardObject)
-      console.log('pile')
+      console.log('origin pile')
       console.log(originPileElement)  
 
-      console.log('origin pile last card')
+      console.log('origin pile end card element')
       console.log(originPileElement.lastChild)  
 
-      console.log('end pile card object')
+      console.log('origin pile end card tracking object')
       console.log(endCardObject)  
 
-      console.log('drop card object')
+      console.log('PRIMARY drop card tracking object')
       console.log(groupMoveFirstCardObject)  
 
       console.log('length of pile')
 
-      // GET DESTINATION PILE LENGTH 
+      // GET DESTINATION PILE LENGTH  - this should be the same as the tracking array length
       pileLength = destinationPileElement.childNodes.length
       console.log(pileLength)
 
-      // DIFFERENCE OF PILE LENGTH AND GROUP ELEMENTS TOTAL GIVES FIRST CARD INDEX 
+      // DIFFERENCE OF PILE LENGTH AND GROUP ELEMENTS TOTAL GIVES FIRST CARD INDEX - this should be the same as the primaryCardIndex found above
       groupStartIndex = pileLength - groupElementsValue
-      trueGroupIndex = groupStartIndex -1
-      console.log('start index')
+      console.log('start index; used specifically ')
       console.log(groupStartIndex)
       
       // GET GROUP FIRST CARD 
       groupStartCard = destinationPileElement.children[groupStartIndex]
-      console.log('group starting card')
+      console.log('group starting card: for info')
       console.log(groupStartCard) 
 
     
 
 
-// ORIGIN END CARD ORIENTATION CHECK
-if(endCardObject.when_flipped >= groupMoveFirstCardObject.when_moved){
+// ORIGIN END CARD ORIENTATION CHECK: CARD FLIPPED BY MOVE
+if(endCardObject.when_flipped === MovedCardObject.when_moved){
   console.log('ORIGIN end card was facedown before drop card moved; UNflip card')
   
   console.log( originPileElement.lastChild)
   // RESET ORIGIN END CARD'S FACEDOWN ATTRIBUTES
   originPileElement.lastChild.src =  `images/backgnd.jpg`
   originPileElement.lastChild.setAttribute('draggable', false)
+  // play flip sound
+cardFlip.play()
+
 
     // ORIGIN END CARD OBJECT PROPERTY RESETS
     endCardObject.when_flipped = ''
 
-    // SINCE ORIGIN END CARD WAS FLIPPED, THIS WAS THE FIRST MOVE OF THE GROUP'S FIRST CARD; SO RESET IT'S PROPERTIES
-    groupMoveFirstCardObject.primary_card.destination = ''
-    groupMoveFirstCardObject.when_moved = ''
-    groupMoveFirstCardObject.total_selected = ''
-    groupMoveFirstCardObject.primary_card.group_elements = ''
-    // PUSH PRIMARY CARD OBJECT BACK TO ORIGIN TRACKER
-    endCardPileTracker.push(groupMoveFirstCardObject)
+    // SINCE ORIGIN END CARD WAS FLIPPED, THIS WAS THE FIRST MOVE OF THE GROUP'S FIRST CARD; SO RESET IT'S PROPERTIES.  I don't trust the properties rewrite on this object so I'm going to create a new object and use properties on the primary card to complete the properties on the new object; write the new property values that need changing and then push the object to the origin tracker. Because this is the primary card's first move, the principal origin property takes the origin pile name, and so does the primary_card.origin property, the destination is empty because prior to the undo move there was no movement of the card yet. 
+
+    let primaryUndoObj = {
+      primary_card: {
+        card: groupMoveFirstCardObject.primary_card.card,
+        origin:originPileName,
+        destination:'',
+        group_elements:''
+      }, 
+      
+      total_selected: '', 
+    when_flipped: groupMoveFirstCardObject.when_flipped, 
+    when_moved: '',
+      principal_origin: originPileName
+    }
+
+    // PUSH  NEW PRIMARY CARD OBJECT BACK TO ORIGIN TRACKER - don't forget to remove it from the drop pile tracker - this is done at the end using recursion based on the group_elements value
+    endCardPileTracker.push(primaryUndoObj)
 
   
 
   //SECONDARY CARDS TRACKING OBJECTS UPDATE AND REPOSITION ------------------------
 
-// FIND ALL SECONDARY CARD OBJECTS
+
+// FIND ALL SECONDARY CARD OBJECTS IN DESTINATION TRACKER - clear temporary object store first
+tempGroupObjectsArray = []
 // this pushes a copy of each card in the destination tracker to a temporary array where the object properties can be updated. 
 movedCardTracker.forEach((cardObj, objIndex) =>{
-  if(objIndex > firstCardIndex){
+  if(objIndex > primaryCardIndex){
     tempGroupObjectsArray.push(cardObj)
   }
 })
 
 
-// REMOVE OBJECTS FROM BREADCRUMB ARRAY
-function removeBreadcrumbs(cardsToRemove){
+console.log('temporary group objects array: should contain one object less than group selection number')
+console.log(tempGroupObjectsArray)
+
+
+ // REMOVE OBJECTS FROM BREADCRUMB ARRAY
+ function removeBreadcrumbs(cardsToRemove){
   // console.log(cardsToRemove)
   // Number of times breadcrumb is possed is equal to the number of cards in the group
   breadcrumbArray.pop()
@@ -1872,29 +1932,43 @@ function removeBreadcrumbs(cardsToRemove){
   }
   removeBreadcrumbs(groupElementsValue)
 
-  // FIND OTHER BREADCRUMB INSTANCES OF SECONDARY CARDS - UPDATE AND PUSH BACK TO ORIGIN TRACKER
+
+
+
+  // FIND OTHER BREADCRUMB INSTANCES OF SECONDARY CARDS - UPDATE AND PUSH BACK TO ORIGIN TRACKER  - when two consecutive cards are face up, the upper card must have made at least one movement to the lower card; so if it is moved as part of a group, that would be at least it's second move, or better stated, is second move after moving to the card it was already on top of; and that means that it must have another breadcrumb instance that isn't the one referring to the move that we are trying to undo. This applies to ALL secondary cards in the group. 
  tempGroupObjectsArray.forEach(object =>{
   // initialte highest index variable
   let highestIndex = -1
+
   // check all breadcrumb objects
   breadcrumbArray.forEach((crumb, crumbIndex) =>{
     // if a matching breadcrumb is found
     if(crumb.primary_card.card === object.primary_card.card){
       // increment highestindex of object
-      highestIndex ++
-    }else{
-      // otherwise keep current index value
-      highestIndex = highestIndex
+      if(breadcrumbArray.indexOf(crumb) > highestIndex ){
+        // set previous crumb for object as the current breadcrumb
+       
+        //set highest index as index of current breadcrumb
+        highestIndex = breadcrumbArray.indexOf(crumb)
+      } 
     }
 // once last breadcrumb object has been examined, push the breadcrumb with the highest index to the origin tracker
 
     if(crumbIndex === breadcrumbArray.length - 1){
-// PUSH BREADCRUMB REPRESENTING CARDS LAST MOVE BACK TO ORIGIN TRACKER
-      endCardPileTracker.push(breadcrumbArray[highestIndex])
-      console.log('highest index')
+
+// PUSH BREADCRUMB REPRESENTING CARDS LAST MOVE BACK TO ORIGIN TRACKER - only if the tracking object has another instance
+
+let numberPushed = 0; // initialize number pushed variable to ensure the correct number of objects have been pushed back to the origin tracker, there should be the total number of cards dragged minus one. 
+if(highestIndex > -1){
+
+  endCardPileTracker.push(breadcrumbArray[highestIndex])
+  numberPushed ++; // increase number pushed by 1
+  console.log('highest index')
 console.log(highestIndex)
-console.log('card generating index')
+console.log('previous breadcrumb')
 console.log(crumb)
+}
+
     }
 
   })
@@ -1902,7 +1976,9 @@ console.log(crumb)
  })
 
 
- // REMOVE OBJECTS FROM DESTINATION PILE TRACKER
+
+
+ // REMOVE OBJECTS FROM DESTINATION PILE TRACKER 
 function removeCardObjects(cardsToRemove){
 
   movedCardTracker.pop()
@@ -1919,16 +1995,16 @@ function removeCardObjects(cardsToRemove){
 
 
 
-}else{ // ORIGIN END CARD WAS NOT FLIPPED BY GROUP CARD MOVE
+}else{ // ORIGIN END CARD WAS NOT FLIPPED BY GROUP CARD MOVE - MULTIPLE card UNDO onto faceup card. 
 
-// same process as above but this time the primary card is included in the breadcrumb search since it must have a history and therefore a previous breadcrumb. 
+// same process as above but this time the primary card is included in the breadcrumb search since it must have a history (WHERE IT MOVED TO THE END CARD, WHICH IS FACE UP) and therefore a previous breadcrumb. 
 
   //TRACKING OBJECTS REPOSITION
 // FIND ALL CARD OBJECTS - clear temporary object store first
 tempGroupObjectsArray = []
 // this pushes a copy of each card in the destination tracker to a temporary array where the object properties can be updated. 
 movedCardTracker.forEach((cardObj, objIndex) =>{
-  if(objIndex >= firstCardIndex){
+  if(objIndex >= primaryCardIndex){
     tempGroupObjectsArray.push(cardObj)
   }
 })
@@ -1997,7 +2073,7 @@ function removeBreadcrumbs(howMany){
 destinationPileElement.childNodes.forEach((child, childIndex) =>{
   console.log(child)
 
-  // FROM FIRST CARD ONWARD 
+  // FROM PRIMARY CARD ONWARD 
   if(childIndex >= groupStartIndex){
     // CREATE CLONE CARD
     let newChild = child.cloneNode(false)
@@ -2022,7 +2098,9 @@ console.log(realElements)
 })
 // APPEND DOCUMENT FRAGMENT TO ORIGIN PILE
 originPileElement.append(df)
+// CLEAR TEMPORARY ELEMENTS ARRAY
 tempGroupElementsArr = []
+// CLEAR REAL ELEMENTS ARRAY - I don't think this array is needed but keeping it for the moment until complete refactor of code base. 
 realElements = []
 
 
@@ -2048,13 +2126,16 @@ function removeCardElements(howMany){
 
 
 
-    }else{
+    }else{// SINGLE CARD TRANSFER - DROP PILE TO DROP
        // SINGLE CARD TRANSFER - DROP PILE TO DROP
       console.log('single card undo - DROP PILE') 
+console.log(`
+group elements number: ${groupElementsNumber}
 
+`)
 
       //DROP CARD OBJECT
-MovedCardObject = movedCardTracker[movedCardTracker.length - 1]
+
 console.log('MovedCardObject')
 console.log(MovedCardObject)
 console.log('group elements object type')
@@ -2062,7 +2143,7 @@ console.log('group elements object type')
 
 
   //DROP CARD ELEMENT
-  dropCard = pile.lastChild
+  dropCard = destinationPileElement.lastChild
   console.log('dropCard')
   console.log(dropCard)
 
@@ -2075,20 +2156,38 @@ if(endCardObject.when_flipped === MovedCardObject.when_moved){
   // RESET FACEDOWN ATTRIBUTES
   originLastCardElement.src =  `images/backgnd.jpg`
   originLastCardElement.setAttribute('draggable', false)
-  
-  // RETURN / APPEND DROP CARD
+  cardFlip.play()
+ 
+
+  setTimeout(() => {
+     // RETURN / APPEND DROP CARD - have a small delay for the card's return
   originPileElement.append(dropCard)
+  }, 350);
   
   //because the moved card was on top of a facedown card, it must have been the first move; reset card's object properties to reflect that. 
   
-  //OBJECT PROPERTY RESETS
+  //END CARD OBJECT PROPERTY RESETS
   endCardObject.when_flipped = ''
-  MovedCardObject.primary_card.destination = ''
-  MovedCardObject.when_moved = ''
-  MovedCardObject.total_selected = ''
+
+  // DROP CARD PROPERTY RESET - create a new tracking object just to be safe. 
+  let newDropObj = {
+
+    primary_card: {
+      card:MovedCardObject.primary_card.card,
+      origin: originPileName,
+      destination:'',
+      group_elements:''
+    }, 
+    
+    total_selected: '', 
+  when_flipped: MovedCardObject.when_flipped, 
+  when_moved: '',
+    principal_origin: originPileName
+    }
+
   
   //TRACKING OBJECT REPOSITION
-  endCardPileTracker.push(MovedCardObject)
+  endCardPileTracker.push(newDropObj)
   movedCardTracker.pop()
   breadcrumbArray.pop()
   
@@ -2102,41 +2201,56 @@ if(endCardObject.when_flipped === MovedCardObject.when_moved){
   
   //TEMPORARY BREADCRUMB STORE
   let storeBreadcrumb = []
-  //STORE CURRENT BREADCRUMB
-  storeBreadcrumb.push(lastBreadcrumb)
+  //STORE CURRENT BREADCRUMB - in a new object
+  let newCurrentBreadcrumbObj = {
+    ...lastBreadcrumb
+  }
+  storeBreadcrumb.push(newCurrentBreadcrumbObj)
   //REMOVE CURRENT FROM BREADCRUMB HISTORY
   breadcrumbArray.pop()
   
   // GET PREVIOUS BREADCRUMB INSTANCE OF DROP CARD  - the properties on that breadcrumb give details of the cards movement to the origin from elsewhere
   let highestIndex = -1;
-  let previousBreadcrumb;
-  breadcrumbArray.forEach((object) =>{
+   breadcrumbArray.forEach((object) =>{
     if(object.primary_card.card === MovedCardObject.primary_card.card){
       if(breadcrumbArray.indexOf(object) > highestIndex ){
-        previousBreadcrumb = object
+ 
         highestIndex = breadcrumbArray.indexOf(object)
       } 
       
     }
   })
+
+  // given that previous breadcrumb will change several times, to avoid any unforseen issues I think it's better to use the highest available index once the loop of the breadcrumb array is complete. And also to use a condition for only allowing an attmpt at append if highest index has changed. 
   
   console.log('highestIndex')
   console.log(highestIndex)
   
-  console.log('previous breadcrumb object')
-  console.log(previousBreadcrumb)
   
-  // CREATE NEW OBJECT FOR PREVIOUS BREADCRUMB PROPERTIES
-  let newUndoObj = {
-  ...previousBreadcrumb
-  }
-  
+  // CREATE NEW OBJECT FOR PREVIOUS BREADCRUMB PROPERTIES - only if highest index has changed
+  if(highestIndex > -1){
+
+    let newUndoObj = {
+      ...breadcrumbArray[highestIndex]
+      }
+
   // PUSH NEW OBJECT TO ORIGIN TRACKER
   endCardPileTracker.push(newUndoObj)
   // POP UNEDITED OBJECT FROM DESTINATION TRACKER
   movedCardTracker.pop()
   // CLEAR TEMP STORE
   storeBreadcrumb = []
+
+  }else{
+
+    // in the unlikely event of a the unavailability of a previous breadcrumb log the error and show the card for debugging purposes
+    console.log('no history breadcrumb exists for this object')
+    console.log(MovedCardObject)
+  }
+
+  
+
+
   
   }
       }
@@ -2153,9 +2267,6 @@ if(endCardObject.when_flipped === MovedCardObject.when_moved){
       // origin pile tracker
       endCardPileTracker = dropPileTracker[pileIndex]
       // otherwise show pile.  The card can just be dropped back to the previous location
-
-
-
       console.log('origin pile empty')
       console.log(pile)
       // find the drop card and append to origin pile
@@ -2168,6 +2279,7 @@ allFoundationElements.forEach((foundation, foundationIndex) =>{
   // assign index variable
   dropIndex = foundationIndex
 
+  // probably not necessary but for debugging of any unexpected issues. 
   if(foundation.lastChild){
   // get drop card
   dropCard = foundation.lastChild
@@ -2177,6 +2289,8 @@ allFoundationElements.forEach((foundation, foundationIndex) =>{
   originPileElement.style.cssText = 'border-style: none;'
   originPileElement.append(dropCard)
 
+  }else{
+    console.log('foundation card does not exist although it should since the destination is a foundation - INVESTIGATE')
   }
 
 movedCardTracker = foundationTracker[foundationIndex]
@@ -2224,37 +2338,48 @@ endCardPileTracker.push(newUndoObj)
 // remove cards object from destination pile
 movedCardTracker.pop()
 tempBreadCrumb = []
-  }else{ //KING'S FIRST MOVE so we can use the object in temp storage and just update its values
+  }else{ //KING'S FIRST MOVE so we can use the object in temp storage and just update values on a new object we create using the temp storage, and reseting other values. 
 
    
-    let newUndoObj = {
-      ...tempBreadCrumb[0]
+    let newUndoKingObj = {
+       
+      primary_card: {
+        card:tempBreadCrumb[0].primary_card.card,
+        origin: originPileName,
+        destination:'',
+        group_elements:''
+      }, 
+      
+      total_selected: '', 
+    when_flipped: tempBreadCrumb[0].when_flipped, 
+    when_moved: '',
+    principal_origin: originPileName
     }
-    // update values
-    newUndoObj.primary_card.destination = ''
-    newUndoObj.when_moved = ''
-    newUndoObj.total_selected = ''
-
 
       // now the object needs to be pushed back to the origin tracker
-      endCardPileTracker.push(newUndoObj)
+      endCardPileTracker.push(newUndoKingObj)
       // remove cards object from destination pile
-
-
   }
 
 movedCardTracker.pop()
 }else{
-  // CARD IS NOT A KING - move back to empty pile
+  // CARD IS NOT A KING - move back to empty pile, and it must have been original to the pile so reset all of the properties on the new object. 
 
   // create new object from breadcrumb object
   let newUndoObj = {
-    ...tempBreadCrumb[0]
+       
+    primary_card: {
+      card:tempBreadCrumb[0].primary_card.card,
+      origin: originPileName,
+      destination:'',
+      group_elements:''
+    }, 
+    
+    total_selected: '', 
+  when_flipped: tempBreadCrumb[0].when_flipped, 
+  when_moved: '',
+  principal_origin: originPileName
   }
-  // update object values
-  newUndoObj.primary_card.destination = ''
-  newUndoObj.when_moved = ''
-  newUndoObj.total_selected = ''
 
         // now the object needs to be pushed back to the origin tracker
         endCardPileTracker.push(newUndoObj)
@@ -2269,7 +2394,7 @@ tempBreadCrumb = []
 
   }else{ // DESTINATION DROP PILE
 
-      // GET ORIGIN PILE AND INDEX
+      // GET DESTINATION PILE AND INDEX
 allPileElements.forEach((pile, pileIndex) =>{
   // find the drop pile
   if(pile.id == destinationPileName){
@@ -2277,7 +2402,7 @@ allPileElements.forEach((pile, pileIndex) =>{
     dropIndex = pileIndex;
 // GET PILE ELEMENT 
 destinationPileElement = pile;
-    // DROP CARD 
+    // DROP CARD ELEMENT  - FOR SINGLE CARD DROPS
     dropCard = pile.lastChild
     console.log('dropCard')
     console.log(dropCard)
@@ -2296,44 +2421,46 @@ let valueType = typeof groupElementsValue
     
     if(valueType == 'number'){// MULTIPLE CARD UNDO
   console.log('multiple cards undo')
+  console.log(` group elements: ${groupElementsValue}`)
   // INDEX OF OBJECT OF PRIMARY DROP CARD 
-  let firstCardIndex = movedCardTracker.length - groupElementsValue
+  let primaryCardIndex = movedCardTracker.length - groupElementsValue
   // PRIMARY CARD'S OBJECT 
-  let groupMoveFirstCardObject = movedCardTracker[firstCardIndex]
+  let groupMoveFirstCardObject = movedCardTracker[primaryCardIndex]
 
-  // GET PRIMARY CARD'S VALUE
+  // GET PRIMARY CARD'S RAW VALUE (the raw value of the primary card is used to check whether a card is a king or not;  king card undos  are sometimes handled in the same manner as non-king undos but, depending on their movement history, may require deviation from the method used method non-king cards )
   let primaryCardValue = groupMoveFirstCardObject.primary_card.card
   console.log('MovedCardObject')
   console.log(groupMoveFirstCardObject)
   console.log('group elements object type')
   
         // number values indicate multiple card drop 
-        console.log('multiple card undo - DROP PILE') 
+        console.log('multiple card undo - TO EMPTY DROP PILE') 
         console.log('number of cards to undo')
-        console.log(groupElementsValue)    
+        console.log(groupElementsValue)  
+        console.log('primary card object')  
         console.log(groupMoveFirstCardObject)
-        console.log('pile')
+        console.log('origin pile')
         console.log(originPileElement)  
   
         console.log('length of pile')
   
-        // GET DESTINATION PILE LENGTH 
+        // GET DESTINATION PILE LENGTH - used to calculate index of primary card element
         pileLength = destinationPileElement.childNodes.length
+        console.log('pile length')
         console.log(pileLength)
   
         // DIFFERENCE OF PILE LENGTH AND GROUP ELEMENTS TOTAL GIVES PRIMARY CARD INDEX IN PILE ELEMENT 
         groupStartIndex = pileLength - groupElementsValue
-        trueGroupIndex = groupStartIndex -1
-        console.log('start index')
+             console.log('start index')
         console.log(groupStartIndex)
         
         // GET GROUP FIRST CARD 
-        groupStartCard = destinationPileElement.children[groupStartIndex]
-        console.log('group starting card')
+    groupStartCard = destinationPileElement.children[groupStartIndex]
+        console.log('group starting card: for info')
         console.log(groupStartCard) 
 
-// REMOVE CURRENT BREADCRUMBS FOR ALL CARDS; the previous breadcrumbs will be used for the undone card movements
-// REMOVE OBJECTS FROM BREADCRUMB ARRAY
+// REMOVE CURRENT BREADCRUMBS FOR ALL CARDS; the previous breadcrumbs will be used for the undone card movements.  NOTE: if the primary card is a non-king then it has no previous breadcrumb, but it is not difficult to determine what the values of its properties should be; the when_flipped properties takes from the current breadcrumb since that property does not change for cards that don't originate in the pick pile, which must be the case for the non-king primary card that returns to an empty pile.  The card will have the same origin as primary origin, and, no destination, when moved, or group elements values. 
+// REMOVE OBJECTS FROM BREADCRUMB ARRAY - because, for secondary cards we'll need to use the previous breadcrumb object as the of properties information on the undone cards. 
 function removeBreadcrumbs(cardsToRemove){
   // console.log(cardsToRemove)
   // Number of times breadcrumb is possed is equal to the number of cards in the group
@@ -2347,13 +2474,13 @@ function removeBreadcrumbs(cardsToRemove){
   }
   removeBreadcrumbs(groupElementsValue)
 
-        // CREATE TEMPORARY ARRAY TO HOLD COPIES OF CARD OBJECTS AT DESTINATION - clear the array first
+        // CREATE TEMPORARY ARRAY TO HOLD COPIES OF DROP CARD OBJECTS AT DESTINATION - clear the array first
         tempGroupObjectsArray = []
 
 
 // PUSH A COPY OF EACH CARD'S TRACKING OBJECT TO TEMP ARRAY
 movedCardTracker.forEach((cardObj, objIndex) =>{
-  if(objIndex >= firstCardIndex){
+  if(objIndex >= primaryCardIndex){
     tempGroupObjectsArray.push(cardObj)
   }
 })
@@ -2361,25 +2488,48 @@ movedCardTracker.forEach((cardObj, objIndex) =>{
 // check objects of all moved cards are temporarily stored
 console.log('temporary moved objects')
 console.log(tempGroupObjectsArray)
+
+
 // check if primary drop card (first in group) is a king or non-king
+
 if(primaryCardValue < 49){ // < 49 RAW VALUE IS NON-KING
+
+  console.log(`multiple card undo; EMPTY DROP PILE - NON-KING PRIMARY CARD
+  
+  There is only one possible scenario here: 
+  The primary card must have originated in the drop pile, because non-kings cannot be moved to empty drop piles. 
+
+  The PRIMARY card must have already flipped because if a facedown card  in the same pile as a group of cards that moves, and sits directly below the group, it will flip to faceup, but not move with the group. Because the primary card is part of the group it must have already been face up, and therefore already flipped.  We can just copy the when_flipped property from the current breadcrumb 
+  
+  `)
   // card is a non-king so, prior to last move was original to the pile, and not moved before. 
 
-  // RESET PRIMARY CARD PROPERTIES
-  tempGroupObjectsArray[0].primary_card.destination = '';
-  tempGroupObjectsArray[0].primary_card.when_moved = '';
-    tempGroupObjectsArray[0].primary_card.group_elements = '';
-    tempGroupElementsArr[0].total_selected = '';
+  // RESET PRIMARY CARD PROPERTIES - by creating a new object and copying values not needing to change from temporary object array zero index, or where necessary, rewriting the values on properties to reflect the card's non-moved state
+  let newPrimaryObject = {
+
+    primary_card: {
+      card: tempGroupObjectsArray[0].primary_card.card,
+      origin: originPileName,
+      destination:'',
+      group_elements:''
+    }, 
+    
+    total_selected: '', 
+  // card would have been flipped on another occation prior to cards move, if it was not in pile one. So it's best to use the value on the current breadcrumb
+  when_flipped: tempGroupObjectsArray[0].when_flipped, 
+  when_moved: '',
+    principal_origin: originPileName
+  }
 
 // PUSH PRIMARY CARD OBJECT TO ORIGIN TRACKER
-endCardPileTracker.push(tempGroupObjectsArray[0])
+endCardPileTracker.push(newPrimaryObject)
 
 // REMOVE PRIMARY CARD OBJECT FROM TEMP ARRAY
 tempGroupObjectsArray.shift()
 
 
 
- // FIND OTHER BREADCRUMB INSTANCES OF SECONDARY CARDS - UPDATE AND PUSH BACK TO ORIGIN TRACKER
+ // FIND OTHER BREADCRUMB INSTANCES OF SECONDARY CARDS -  AND PUSH OBJECT TO ORIGIN TRACKER. THE MOST RECENT PREVIOUS BREADCRUMB OF EACH OBJECT REFLECTS THE OBJECT IN ITS STATE PRIOR TO THE MOVE
  tempGroupObjectsArray.forEach(object =>{
   // initialte highest index variable
   let highestIndex = -1
@@ -2388,24 +2538,37 @@ tempGroupObjectsArray.shift()
     // if a matching breadcrumb is found
     if(crumb.primary_card.card === object.primary_card.card){
       // increment highestindex of object
-      highestIndex ++
-    }else{
-      // otherwise keep current index value
-      highestIndex = highestIndex
+    if(breadcrumbArray.indexOf(crumb) > highestIndex ){
+      // set previous crumb for object as the current breadcrumb
+      previousBreadcrumb = crumb
+      //set highest index as index of current breadcrumb
+      highestIndex = breadcrumbArray.indexOf(crumb)
+    } 
     }
 // once last breadcrumb object has been examined, push the breadcrumb with the highest index to the origin tracker
 
     if(crumbIndex === breadcrumbArray.length - 1){
 // PUSH BREADCRUMB REPRESENTING CARDS LAST MOVE BACK TO ORIGIN TRACKER
-      endCardPileTracker.push(breadcrumbArray[highestIndex])
-      console.log('highest index')
+
+
+// once all breadcrumbs have been examined use highest index to get card's previous breadcrumb and push to origin tracker array
+
+
+// to be sure that we are pushing a breadcrumb object at all, the index change will indicate that one exists; only if the index is not -1 will the breadcrumb be pushed to the origin pile tracker.  If no object exists then the error can be investigated. 
+if(highestIndex > -1){
+
+  endCardPileTracker.push(breadcrumbArray[highestIndex])
+  console.log('highest index')
 console.log(highestIndex)
 console.log('card generating index')
 console.log(crumb)
+
+}
+
     }
 
   })
-// once all breadcrumbs have been examined use highest index to get card's previous breadcrumb and push to origin tracker array
+
  })
 
 
@@ -2427,7 +2590,7 @@ console.log(crumb)
 
 
 }else{
-  // PRIMARY (first card in group) CARD IS A KING
+  // PRIMARY (first card in group) CARD IS A KING - we need to find out if the card has moved before; we cannot use the when_moved moved property because that gives no information about previous moves if they exist; it only logs the moved that left the card in its current state. 
 
         // use highestIndex variable to get highest index of any previous versions of the card's tracking object 
         let highestIndex = -1;
@@ -2446,13 +2609,9 @@ console.log(crumb)
         })
     
 
-
-
-
-
-    // IF highestIndex ISN'T INITIALIZED VALUE  
+    // IF highestIndex DIFFERS FROM THE INITIALIZED VALUE  
         if(highestIndex > -1){ // NOT KING'S FIRST MOVE
-    // so ALL of the cards have history so get previous breadcrumbs for king and secondary cards
+    // so ALL of the cards have history; get previous breadcrumbs for king and secondary cards
   // FIND OTHER BREADCRUMB INSTANCES OF ALL CARDS 
   tempGroupObjectsArray.forEach(object =>{
     // initialte highest index variable
@@ -2462,20 +2621,33 @@ console.log(crumb)
       // if a matching breadcrumb is found
       if(crumb.primary_card.card === object.primary_card.card){
         // increment highestindex
-        highestIndex ++
-      }else{
-        // otherwise keep current index value
-        highestIndex = highestIndex
+        if(breadcrumbArray.indexOf(crumb) > highestIndex ){
+          // set previous crumb for object as the current breadcrumb
+          previousBreadcrumb = crumb
+          //set highest index as index of current breadcrumb
+          highestIndex = breadcrumbArray.indexOf(crumb)
+        } 
       }
   // once last breadcrumb object has been examined, push the breadcrumb with the highest index to the origin tracker
   
       if(crumbIndex === breadcrumbArray.length - 1){
-  // PUSH PREVIOUS CRUMB TO ORIGIN TRACKER
-        endCardPileTracker.push(breadcrumbArray[highestIndex])
-        console.log('highest index')
-  console.log(highestIndex)
-  console.log('card generating index')
-  console.log(crumb)
+  // PUSH PREVIOUS CRUMB TO ORIGIN TRACKER - but make to check for errors use the condition to only attempt the push if the initialized highest index value has changed. 
+  if(highestIndex > -1){
+    // not sure if it would be better to create a new object; better safe than sorry
+let newEndCardObject = {
+...breadcrumbArray[highestIndex]
+}
+
+    endCardPileTracker.push(newEndCardObject)
+    console.log('highest index')
+console.log(highestIndex)
+console.log('card generating index')
+console.log(crumb)
+
+  }else{
+    console.log('there is no history breadcrumb for this card')
+  }
+
       }
   
     })
@@ -2487,24 +2659,34 @@ console.log(crumb)
 
     // CLEAR TEMPORARY BREADCRUMBS STORE 
     tempBreadCrumb = []
-        }else{
+        }else{ // KING'S FIRST MOVE
           
-           // KING'S FIRST MOVE so we can use the object in temp storage and just update its values
+           // KING'S FIRST MOVE so we can create a new object with fresh values to represent the king in the state of unmoved card originating in the origin pile. 
     
          
-          let newUndoObj = {
-            ...tempBreadCrumb[0]
+          let newUndoKingObject = {
+
+            primary_card: {
+// get card value from zero position item which is primary card tracking object
+              card: tempGroupObjectsArray[0].primary_card.card,
+              origin:originPileName,
+              destination:'',
+              group_elements:''
+            }, 
+            
+            total_selected: '', 
+// if the card was in pile one, then it never flipped, otherwise it must have flipped at some point, either way, just copy whatever is on the current breadcrumb            
+          when_flipped: tempGroupObjectsArray[0].when_flipped, 
+          when_moved: '',
+            principal_origin: originPileName
           }
-          // update values
-          newUndoObj.primary_card.destination = ''
-          newUndoObj.when_moved = ''
-          newUndoObj.total_selected = ''
+
             // now the object needs to be pushed back to the origin tracker
-            endCardPileTracker.push(newUndoObj)
-// REMOVE KING CARD OBJECT FROM TEMP ARRAY
+            endCardPileTracker.push(newUndoKingObject)
+// REMOVE KING CARD OBJECT FROM TEMP ARRAY so that others can be looped through to find their previous breadcrumbs
 tempGroupObjectsArray.shift()
 
-            // CHECK PREVIOUS BREADCRUMBS OF OTHER CARDS
+            // CHECK PREVIOUS BREADCRUMBS OF OTHER CARDS, SO THEY CAN BE USED AS CARD TRACKING OBJECTS FOR SECONDARY CARDS IN THEIR ORIGINAL STATE BEFORE CURRENT MOVE
             tempGroupObjectsArray.forEach(object =>{
               // initialte highest index variable
               let highestIndex = -1
@@ -2520,13 +2702,21 @@ tempGroupObjectsArray.shift()
                 }
             // once last breadcrumb object has been examined, push the breadcrumb with the highest index to the origin tracker
             
+// WHEN ALL BREADCRUMBS HAVE BEEN CHECKED, IF A PREVIOUS BREADCRUMB IS FOUND PUSH TO ORIGIN TRACKER
                 if(crumbIndex === breadcrumbArray.length - 1){
-            // PUSH PREVIOUS CRUMB TO ORIGIN TRACKER
-                  endCardPileTracker.push(breadcrumbArray[highestIndex])
-                  console.log('highest index')
-            console.log(highestIndex)
-            console.log('card generating index')
-            console.log(crumb)
+
+
+            // again, use a condition that a previous breadcrumb exists or not, so we can handle errors
+            if(highestIndex > - 1){
+              endCardPileTracker.push(breadcrumbArray[highestIndex])
+              console.log('highest index')
+        console.log(highestIndex)
+        console.log('card generating index')
+        console.log(crumb)
+            }else{
+              console.log('no previous breadcrumb exists')
+            }
+
                 }
             
               })
@@ -2536,6 +2726,24 @@ tempGroupObjectsArray.shift()
              })
         }
     
+
+
+     
+         // REMOVE OBJECTS FROM DESTINATION PILE TRACKER
+ function removeCardObjects(cardsToRemove){
+
+  movedCardTracker.pop()
+  cardsToRemove --
+  if(cardsToRemove > 0){
+    removeCardObjects(cardsToRemove)
+  }else{
+    console.log('all tracking objects removed')
+  } 
+  
+  }
+  removeCardObjects(groupElementsValue)
+  
+}
 
     // remove card's object from destination pile at the end with the other cards
 
@@ -2566,9 +2774,6 @@ df.append(child)
 // CHECK DOCUMENT FRAGEMENT
 console.log(df)
 console.log(realElements)
-
-
-
   })
 
 })
@@ -2578,12 +2783,23 @@ tempGroupElementsArr = []
 
 
 // -------  END OF APPENDING ALL CARDS BACK TO ORIGIN -------------
+// forgotten to remove the end card elements from destination. 
+// -- ALL TRACKING COMPLETE REPOSITIONING; REMOVE CARD ELEMENTS
 
-
-}
-
-
-
+// REMOVE UNDO CARDS FROM DESTNATION PILE
+function removeCardElements(howMany){
+  destinationPileElement.removeChild(destinationPileElement.lastChild)
+  howMany --
+  if(howMany > 0){
+    removeCardElements(howMany)
+  }else{
+    console.log('all cards removed')
+  }
+  
+  
+  }
+  removeCardElements(groupElementsValue)
+  
 
 
 
@@ -2729,119 +2945,9 @@ const drop = (event) =>{
 // console.log(event)
 
 
-// ASSESS CONDITION OF WASTE PILE AND PICK PILE HERE ---------
-
-let faceDownCards;
-
-
-
-// trying this function on waste card drops
-
-// the below condition applies when all pick cards have been  distributed, with the exception of 'one' card, the only card in the waste pile and which is face up; if true, then all cards originating in the pick pile are now faceup and distributed.
-console.log('wasteCardTracker')
-console.log(wasteCardTracker)
-console.log('pickCardTracker')
-console.log(pickCardTracker)
-if(wasteCardTracker.length < 2 && pickCardTracker.length === 0){
-  // reset facedown cards for each time the check runs
- faceDownCards = 0;
-  console.log('pick pile and waste pile are empty')
-console.log(`auto solve possible variable ${autoSolvePossible}`)
-  // if autosovepossible variable is 1 the check for card orientation has been done and it was already found that all cards are face us, so the check (which is inside this condition) will not run since, once cards are oriented in a face up position, they cannot be facedown again, so once this situation of all cards being oriented face up is achieved, the sate remains for the rest of the game. 
-  if(autoSolvePossible < 1){ 
-
-console.log('auto solve is possible')
-
-// loop through drop piles 
-dropPileTracker.forEach(pile =>{  // on each drop pile
-  // if the first card's tracking object has an empty string for the when_flipped property it must still be face down
-console.log('checking drop pile face down cards')
-  // forgot that the pile needs to actually have cards in order to check otherwise this will fail.  The tracking array will have contain no elements on which to check the 'when_flipped' property; only do this on populated piles. 
-  if(pile.length > 0){
-    console.log(pile)
-    console.log(pile[0])
-
-    if(pile[0].when_flipped >= 0 || pile[0].when_flipped !==''){
-      //when_flipped has a value, so don't increment
-      faceDownCards = faceDownCards
-        }else{
-
-              // otherwise  increment the faceDownCards variable
-      faceDownCards +=1
-        }
-    
-  }
-
-})
-
-
-// with the parent condition met, ONCE ALL CARDS ARE FACEUP, the game can be solved. 
-if(faceDownCards === 0){ // all cards are facing up, and game completion must be possible. So give player the option to auto complete game. NOTE* if the player continues the game, there is no need to re-run this function because this current condition always applies; pick cards and all other cards are already facing upward. 
-
-  console.log('all cards are facing up - show solve button')
-// show auto solve button 
-  solveBtn.style.cssText = 'display:block;'
-
-  alert('would you like to auto solve this game? if so click the solve button')
-  // increase cards finish variable, which will prevent the 'faceup' check running again. 
-  autoSolvePossible += 1
-
-// REMOVE EVENT LISTENER FROM PICK PILE
-remainPile.removeEventListener('click')
-undoBtn.style.cssText = 'display:none;'
-  // CHANGE IMAGES FOR PICK PILE AND WASTE PILE
-    // CREATE NEW IMAGE ELEMENT
-    let newDefaultImage = document.createElement('img')
-    // SET SOURCE AS 'NO MORE CARDS' IMAGE
-    newDefaultImage.src = 'images/no more cards img.png';
-    // ADD CLASSES FOR STYLINGS
-    newDefaultImage.classList.add('cardElWaste')
-    newDefaultImage.classList.add('card-border')
-    // APPEND IMAGE
-    wastePile.append(newDefaultImage)
-  
-  
-  
-    // if remain pile still has card back
-    if(remainPile.childNodes.length > 0){
-    // REMOVE CARD BACK FROM REMAIN PILE
-    remainPile.removeChild(remainPile.firstChild)
-    }
-  
-    // CREATE NEW IMAGE
-    let newremainImage = document.createElement('img')
-    // SET SOURCE AS CARD FACE WITH ALL SUITS IMAGE
-    newremainImage.src = 'images/default card face.png';
-    // ADD CLASSES FOR STYLING
-    newremainImage.classList.add('cardElWaste')
-    newremainImage.classList.add('card-border')
-    // APPEND IMAGE
-    remainPile.append(newremainImage)
-  
-
-}else{
-
-  console.log('some cards are still face down')
-  // do nothing - the game can only be solved once all cards are face up so although  autoSolvePossible variable will only increment at that point if it is ever reached. 
-
-}
-}
-
-}else{
-  
-  // console.log('piles not empty yet')
-
-}
 
 
 // ASSESS CONDITION OF WASTE PILE AND PICK PILE HERE ---------
-
-
-
-
-
-
-
 
  
  event.target.style.opacity = "1";
@@ -2849,11 +2955,14 @@ undoBtn.style.cssText = 'display:none;'
   // remove pile highlight
   event.target.classList.remove('enter')
 
+ 
+    // the rest of the function can only continue if data can be extracted from event.dataTransfer (if the card fails to drop, there will be no data available so we want to prevent an attempt to use the data to find the drop object id)
+
   // THIS COULD BE IN A FUNCTION 
   // get id data from dragged card
   const id = event.dataTransfer.getData("text/plain");
   // create new object using id 
-  
+  if(id){
   const newObj = document.getElementById(id);
 
   // extract integer value from id
@@ -3167,7 +3276,9 @@ for(i = selected +1; i < array.length; i++){
     
     total_selected: total, 
     when_flipped:array[i].when_flipped, 
-    when_moved: moveMade,
+    // will replace the when_moved constant with breadcrumb length
+    // when_moved: moveMade,
+    when_moved: breadcrumbArray.length + 1,
     principal_origin: array[i].principal_origin
     }
 
@@ -3679,6 +3790,122 @@ tempDragCardArr.pop()
   
 }
 // dealing with two values: king or non-king
+
+
+
+
+// ALL CARDS ORIENTATION ASSESSMENT ----------------------------------------------------------------------------------------------------------------
+
+let faceDownCards;
+
+
+
+// trying this function on waste card drops
+
+// the below condition applies when all pick cards have been  distributed, with the exception of 'one' card, the only card in the waste pile and which is face up; if true, then all cards originating in the pick pile are now faceup and distributed.
+console.log('wasteCardTracker')
+console.log(wasteCardTracker)
+console.log('pickCardTracker')
+console.log(pickCardTracker)
+if(wasteCardTracker.length < 2 && pickCardTracker.length === 0){
+  // reset facedown cards for each time the check runs
+ faceDownCards = 0;
+  console.log('pick pile and waste pile are empty')
+console.log(`auto solve possible variable ${autoSolvePossible}`)
+  // if autosovepossible variable is 1 the check for card orientation has been done and it was already found that all cards are face us, so the check (which is inside this condition) will not run since, once cards are oriented in a face up position, they cannot be facedown again, so once this situation of all cards being oriented face up is achieved, the sate remains for the rest of the game. 
+  if(autoSolvePossible < 1){ 
+
+console.log('auto solve is possible')
+
+// loop through drop piles 
+dropPileTracker.forEach(pile =>{  // on each drop pile
+  // if the first card's tracking object has an empty string for the when_flipped property it must still be face down
+console.log('checking drop pile face down cards')
+  // forgot that the pile needs to actually have cards in order to check otherwise this will fail.  The tracking array will have contain no elements on which to check the 'when_flipped' property; only do this on populated piles. 
+  if(pile.length > 0){
+    console.log(pile)
+    console.log(pile[0])
+
+    if(pile[0].when_flipped >= 0 || pile[0].when_flipped !==''){
+      //when_flipped has a value, so don't increment
+      faceDownCards = faceDownCards
+        }else{
+
+              // otherwise  increment the faceDownCards variable
+      faceDownCards +=1
+        }
+    
+  }
+
+})
+
+
+// with the parent condition met, ONCE ALL CARDS ARE FACEUP, the game can be solved. 
+if(faceDownCards === 0){ // all cards are facing up, and game completion must be possible. So give player the option to auto complete game. NOTE* if the player continues the game, there is no need to re-run this function because this current condition always applies; pick cards and all other cards are already facing upward. 
+
+  console.log('all cards are facing up - show solve button')
+// show auto solve button 
+  solveBtn.style.cssText = 'display:block;'
+
+  alert('would you like to auto solve this game? if so click the solve button')
+  // increase cards finish variable, which will prevent the 'faceup' check running again. 
+  autoSolvePossible += 1
+
+// REMOVE EVENT LISTENER FROM PICK PILE
+
+undoBtn.style.cssText = 'display:none;'
+  // CHANGE IMAGES FOR PICK PILE AND WASTE PILE
+    // CREATE NEW IMAGE ELEMENT
+    let newDefaultImage = document.createElement('img')
+    // SET SOURCE AS 'NO MORE CARDS' IMAGE
+    newDefaultImage.src = 'images/no more cards img.png';
+    // ADD CLASSES FOR STYLINGS
+    newDefaultImage.classList.add('cardElWaste')
+    newDefaultImage.classList.add('card-border')
+    // APPEND IMAGE
+    wastePile.append(newDefaultImage)
+  
+  
+  
+    // if remain pile still has card back
+    if(remainPile.childNodes.length > 0){
+    // REMOVE CARD BACK FROM REMAIN PILE
+    remainPile.removeChild(remainPile.firstChild)
+    }
+  
+    // CREATE NEW IMAGE
+    let newremainImage = document.createElement('img')
+    // SET SOURCE AS CARD FACE WITH ALL SUITS IMAGE
+    newremainImage.src = 'images/default card face.png';
+    // ADD CLASSES FOR STYLING
+    newremainImage.classList.add('cardElWaste')
+    newremainImage.classList.add('card-border')
+    // APPEND IMAGE
+    remainPile.append(newremainImage)
+  
+
+}else{
+
+  console.log('some cards are still face down')
+  // do nothing - the game can only be solved once all cards are face up so although  autoSolvePossible variable will only increment at that point if it is ever reached. 
+
+}
+}
+
+}else{
+  
+  // console.log('piles not empty yet')
+
+}
+// END OF ALL CARDS ORIENTATION ASSESSMENT ------------------------------------------------------------------------------------------------------------------
+
+console.log(dropPileTracker)
+console.log(foundationTracker)
+console.log(breadcrumbArray)
+}else{
+    console.log('failed card drop - try again')
+  }
+
 }
 
 
