@@ -3993,6 +3993,10 @@ BROAD MOVEMENTS:
 // map index comes from the solution map, indicating which step in the path to solution is in process
 // pile index is for the parent of the card to be moved to foundation index
 // foundationIndex is used to decide where to append the card
+
+// change class to foundationCardEl, so that landing cards sit un-cascaded directly on top of previous card so only the most recently added card on the foundation pile is seen
+
+allPileElements[pileIndex].lastChild.setAttribute('class','foundationCardEl')
       allFoundationElements[foundationIndex].append(allPileElements[pileIndex].lastChild)
 
       console.log(i)
