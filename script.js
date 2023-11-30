@@ -101,6 +101,8 @@ let winCalc;
 
 
 
+
+
 var mouseDownArr = []
 var mouseDown = 0;
 document.body.onmousedown = function() { 
@@ -239,8 +241,8 @@ if(shuffleArr.length < 52){ pushRandom()}
 else{
   
 
-  // move game container up a little bit
-  gameContainerEl.style.cssText = ' margin-top:-8vh;'
+  // // move game container up a little bit
+  // gameContainerEl.style.cssText = ' margin-top:-8vh;'
   
   
   cardsDistribute()
@@ -2944,7 +2946,14 @@ if(breadcrumbArray.length < 1){
 const drop = (event) =>{
 // console.log(event)
 
-
+foundationPilesEl.forEach(foundation =>{
+  console.log(foundation)
+  // foundation.childNodes.cssText = 'margin-top:0px;'
+  if(foundation.children.length > 0){
+    console.log(foundation.children)
+    // foundation.children.style.cssText = 'margin-top:0px;'
+  }
+})
 
 
 // ASSESS CONDITION OF WASTE PILE AND PICK PILE HERE ---------
@@ -2978,7 +2987,18 @@ let dropCardSuitColor;
 
 
 
+// for changing foundation card styling
+function styleFoundationElement(foundation){
 
+console.log(foundation)
+  foundation.childNodes.forEach(child =>{
+    child.classList.remove('cardEl')
+    child.setAttribute('class','foundationCardEl')
+  console.log(child)
+  
+  })
+
+}
 
 
 
@@ -2997,8 +3017,8 @@ let objectType = object.getAttribute('class')
 // CARD HAS 'DRAGGING' CLASS PRIOR TO DROP SO REMOVE NOW CARD IS DROPPED
 if(objectType.includes('dragging')){
    object.classList.remove('dragging')
-}
 
+}
 
 
 
@@ -3010,8 +3030,15 @@ if(objectType.includes('dragging')){
   console.log('waste card object dropped elsewhere');
   console.log(object);
 // the card loses its status as waste card and becomes a normal card
-    object.classList.remove('cardElWaste');
-    object.classList.add('cardEl'); 
+// if the card from the waste pile drops on a foundation pile then give it the foundationCardEl class which changes its style properties so that the card displays directly above the card it sits on; only the top card will display. 
+    if(event.target.id.includes('foundation')){
+      object.setAttribute('class','foundationCardEl')
+      object.classList.remove('cardElWaste');
+    }else{
+
+    }
+
+
 
     // FUNCTION FOR DEALING WITH WASTE CARD DROP
     preUpdateWaste(object)
@@ -3028,7 +3055,25 @@ event.preventDefault()
 // this is the destination 
 console.log('event target - drop pile')
 console.log(event.target)
+
+// for foundation pile drops, we'll remove the 'cardEl' class and add the 'foundationCardEl' class, which can then be styled for the cards to sit directly on top of one another. 
+if(event.target.id.includes('foundation')){
+  console.log('target is foundation pile, change card class from cardEl to foundationCardEl')
+  event.target.appendChild(object)
+styleFoundationElement(object, event.target)
+}else{
+  // if the drop card doesn't have the cardEl property when it is appended to a drop pile then add the class
+  if(!objectType.includes('pile')){
+    if(objectType.includes('foundationCardEl')){
+object.setAttribute('class', 'cardEl')
+    }
 event.target.appendChild(object)
+  }else{
+    event.target.appendChild(object)
+  }
+
+}
+
 
 // once any card has been moved from drop piles or pick piles the undo button will appear - when the game is solved breadcrumbs will be cleared so button will disappear, preventing accidental use of the undo button after game completion. 
 if(breadcrumbArray.length > 0){
@@ -3716,6 +3761,7 @@ const emptyFoundationPlaceAce = () =>{
   if(tempDragCardArr.length > 0){
     breadcrumbArray.push(tempDragCardArr[0])
   }
+console.log('ace object sent for drop from line 3746')
 
     cardType(newObj)
 }
