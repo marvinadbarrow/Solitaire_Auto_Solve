@@ -84,6 +84,14 @@ const distributeSolvable = (dropPiles, pickPile) =>{
 
 // undo button element
 let undoBtn = document.getElementById('undo-btn')
+// refresh button
+let refreshBtn = document.getElementById('refresh-btn') 
+
+refreshBtn.addEventListener('click', () =>{
+location.reload()
+})
+
+
 
 
 //variabel to add event listeners to all piles using forEach
@@ -346,6 +354,9 @@ let pickCardTracker = []
 let breadcrumbArray = []
 
 
+if(breadcrumbArray.length < 1){
+  refreshBtn.style.cssText = "display:block;"
+}
 
 let allTrackers;
 
@@ -829,7 +840,7 @@ console.log(breadcrumbArray)
 if(breadcrumbArray.length > 0){
   // show button if breadcrumbs exist
   undoBtn.style.display = "block"
-
+  refreshBtn.style.cssText = "display:none;"
 }
 
 }
@@ -1158,7 +1169,7 @@ allPileElements.forEach((pile, pileIndex) =>{
     dropCard = pile.lastChild
     console.log('dropCard')
     console.log(dropCard)
-    // so card displays non-cascaded, which is how cards display on the foundation piles, set class attribute as below
+    // card returning to foundation pile from drop pile, so card displays non-cascaded, which is how cards display on the foundation piles, set class attribute as below
 dropCard.setAttribute('class', 'foundationCardEl')
 
 
@@ -1736,7 +1747,7 @@ originLastCardElement.src =  `images/backgnd.jpg`
 originLastCardElement.setAttribute('draggable', false)
 
 // STLYING NOTE: change class attribute from foundationCardEl to cardEl using setAttribute()
-dropCard.setAttribute('class', 'foundationCardEl')
+dropCard.setAttribute('class', 'cardEl card-border')
 
 // RETURN / APPEND DROP CARD
 originPileElement.append(dropCard)
@@ -1763,7 +1774,7 @@ console.log(dropPileTracker)
 console.log('end card was face up before drop card moved')
 
 // STLYING NOTE: change class attribute from foundationCardEl to cardEl using setAttribute()
-dropCard.setAttribute('class', 'cardEl')
+dropCard.setAttribute('class', 'cardEl card-border')
 
 // RETURN/APPEND DROP CARD TO ORIGIN
 originPileElement.append(dropCard)
@@ -2207,6 +2218,7 @@ if(endCardObject.when_flipped === MovedCardObject.when_moved){
 // STLYING NOTE: no need for styling class change since this undo was from drop pile to drop pile
 
 
+
      // RETURN / APPEND DROP CARD - have a small delay for the card's return
   originPileElement.append(dropCard)
   }, 350);
@@ -2341,7 +2353,9 @@ allFoundationElements.forEach((foundation, foundationIndex) =>{
 
   
 // STLYING NOTE: foundation pile undone to drop pile so the styling class attribute has to change from 'cardEl' to 'foundationCardEl' as below; 
-dropCard.setAttribute('class', 'foundationCardEl')
+
+// here is the mistake where the classes should be switched, i.e. card is returing from foundation to drop pile so cardEl and card-border should be the styling class
+dropCard.setAttribute('class', 'cardEl card-border')
   originPileElement.append(dropCard)
 
   }else{
@@ -2955,11 +2969,13 @@ movedCardTracker.pop()
     
   }
 
+  // STLYING NOTE: single card undo, drop pile to drop pile, so no need to change styling class
+
 // APPEND CARD HERE 
   originPileElement.append(dropCard)
 
 
-// STLYING NOTE: single card undo, drop pile to drop pile, so no need to change styling class
+
 }
   }
 
@@ -4082,7 +4098,14 @@ undoBtn.style.cssText = 'display:none;'
 console.log(dropPileTracker)
 console.log(foundationTracker)
 console.log(breadcrumbArray)
+
 }
+
+
+if(breadcrumbArray.length > 0){
+  refreshBtn.style.cssText = "display:none;"
+}
+
 
   }
 else{
@@ -4208,7 +4231,8 @@ console.log('mapping complete')
 
 }else{
 // refresh page 
-// refreshBtn.style.display = 'block'
+solveBtn.style.display = 'none'
+refreshBtn.style.cssText = "display:block;"
 }
 
 

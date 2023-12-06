@@ -59,7 +59,11 @@ display: none;
 margin: auto;
 }
 
-#solve-btn, #shuffle-btn{background-color: rgb(41, 40, 40); font-weight: bold; width: 20%; height: auto; font-size: 25px; color:white; border-radius: 8px; margin: auto;}
+#solve-btn, #shuffle-btn, #refresh-btn{background-color: rgb(41, 40, 40); font-weight: bold; width: 20%; height: auto; font-size: 25px; color:white; border-radius: 8px; margin: auto;}
+
+#solve-btn{background-color: rgb(41, 40, 40); }
+
+#refresh-btn{background-color: rgb(233, 77, 30); display: none; }
 
 
 
