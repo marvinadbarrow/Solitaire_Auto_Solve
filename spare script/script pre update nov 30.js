@@ -17,9 +17,6 @@ let cardPack = [
 
 let cardFlip = new Audio('sounds/card_flip.mp3')
 let emptyPile = new Audio('sounds/empty_pile_sound.mp3')
-let foundationDrop = new Audio('sounds/foundation_drop.mp3')
-let swooshSound = new Audio('sounds/swish_quiet.mp3')
-
   // FETCHING AUTO SOLVE SCENARIO LAYOUT FOR TESTING SOLVE BUTTON - 
 
   // variables for foundation trackers and drop pile trackers in solve scenario
@@ -104,8 +101,6 @@ let winCalc;
 
 
 
-
-
 var mouseDownArr = []
 var mouseDown = 0;
 document.body.onmousedown = function() { 
@@ -179,15 +174,6 @@ let clickedFoundationArr = []
 let allFoundationElements = [foundationPileOne, foundationPileTwo, foundationPileThree, foundationPileFour]
 
 
-
-allFoundationElements.forEach(foundation =>{
-foundation.style.backgroundImage ='images/foundation_background_white.png'
-  })
-
-  foundationPileOne.style.backgroundImage = ' url(images/foundation_background_white.png)'
-  foundationPileTwo.style.backgroundImage = ' url(images/foundation_background_white.png)'
-  foundationPileThree.style.backgroundImage = ' url(images/foundation_background_white.png)'
-  foundationPileFour.style.backgroundImage = ' url(images/foundation_background_white.png)'
 // the elements in this array are node lists, each one listing the contents (cards elements) of one of the foundation piles.  In the event that all pick cards are used and all of the drop pile cards are revealed, each nodelist will be looped through where, for each card element, the id will be extracted, the file extension removed from the id string, and the remaining string converted to a number, the resulting numbers will be pushed to a subarray representing the foundation pile corresponding to the node list. The resulting subarrays along with subarrays representing the drop piles, will be used used to create a method for automating the completion of the game from the above described scenario.  then the player will be given the option to allow the game to auto complete. 
 let foundationPileMainArray = [foundationPileOne, foundationPileTwo, foundationPileThree, foundationPileFour]
   
@@ -253,8 +239,8 @@ if(shuffleArr.length < 52){ pushRandom()}
 else{
   
 
-  // // move game container up a little bit
-  // gameContainerEl.style.cssText = ' margin-top:-8vh;'
+  // move game container up a little bit
+  gameContainerEl.style.cssText = ' margin-top:-8vh;'
   
   
   cardsDistribute()
@@ -1089,7 +1075,7 @@ let allPilesArray = [pileOneChildren, pileTwoChildren, pileThreeChildren, pileFo
 
 // let allFoundationPilesArray = [currentFoundationPileOne, currentFoundationPileTwo, currentFoundationPileThree, currentFoundationPileFour]
 
-let autoSolvePossible = 0; // when the deck cards are finished, increment this value to '1' so that you can stop the 'cards finished' alert from re-executing each time you move a card in the drop pile after the initial alert.  you might also be able to manipulate the allPilesArray from within that condition. So, rather than repopulating the array from scratch, you can pick push the moved card values to destination piles and pop moved cards from origin piles. 
+let autoSolvePossible = 0; // when cards are finished, increment this value to '1' so that you can stop the 'cards finished' alert from re-executing each time you move a card in the drop pile after the initial alert.  you might also be able to manipulate the allPilesArray from within that condition. So, rather than repopulating the array from scratch, you can pick push the moved card values to destination piles and pop moved cards from origin piles. 
 
 // console.log(pileOneArr, pileTwoArr, pileThreeArr, pileFourArr,    pileFiveArr, pileSixArr, pileSevenArr)
 
@@ -1131,7 +1117,7 @@ let endCardObject // if origin pile is not empty, this object is the tracking ob
 
 // if the origin was a foundation or drop pile 
 if(originPileName.includes('foundation')){
-  // ONE FORWARD DESTINATION: DROP PILE
+  // ONE DESTINATION: DROP PILE
 console.log('this card came from a foundation pile')
 allFoundationElements.forEach((foundation, pileIndex) =>{
   if(foundation.id == originPileName){
@@ -1158,8 +1144,7 @@ allPileElements.forEach((pile, pileIndex) =>{
     dropCard = pile.lastChild
     console.log('dropCard')
     console.log(dropCard)
-    // so card displays non-cascaded, which is how cards display on the foundation piles, set class attribute as below
-dropCard.setAttribute('class', 'foundationCardEl')
+
 
 
 
@@ -1223,7 +1208,7 @@ storeBreadcrumb = []
 
 // ------------------ FOUNDATION ORIGIN -------------------------
 }else if(originPileName.includes('pick')){
-  // one forward destination; waste pile
+  // one destination; waste pile
   
   console.log('this card came from a pick pile')
 
@@ -1328,12 +1313,9 @@ let newCardElement = document.createElement('img')
   newCardElement.addEventListener('dragend', dragEnd)
   wastePile.classList.add('card-size');
 
-// STYLING NOTICE: cards returning to the pick pile from waste pile in the undo function have no physical element to them, so there is no card to format since pick cards are not displayed. 
 
   // APPEND NEW CARD TO WASTEPILE
   wastePile.append(newCardElement)
-
-
   // AT THIS POINT, THERE SHOULD BE 2 CARDS ON THE WASTE PILE SO REMOVE THE FIRST CARD ELEMENT. 
   if(wastePile.childNodes.length > 1){
     wastePile.removeChild(wastePile.firstChild)
@@ -1397,22 +1379,7 @@ emptyPile.play()
 }
 
 }else if(originPileName.includes('waste')){
-
-  /*
-  // there are three forward destinations from the waste pile: 
-  1. Pick pile
-  2. foundation
-  3. drop pile
-
-  1) pick pile cards returning to waste pile need no formatting aside from the top card to be displayed; the styling of that card is created in the conditions for undoing a pick card move. So no need to change the styling since it is correct for waste pile cards. 
-
-  2) the stying attribute which was 'foundationCardEl' needs to be set to 'cardElWaste', or perhaps multiple attributes, which would also include 'card-border'
-
-  3)  the stying attribute which was 'cardEl' needs to be set to 'cardElWaste', or perhaps multiple attributes, which would also include 'card-border'. 
-
-  */
-
-
+  // one destination; pick pile
     console.log('this card came from a waste pile')
 
             // ORIGIN PILE  (WASTE PILE)
@@ -1687,7 +1654,7 @@ allPileElements.forEach((pile, pileIndex) =>{
         // ORIGIN INDEX
     originIndex = pileIndex
 
-    // IF ORIGIN PILE IS POPULATED
+    // IF ORIGIN PILE STILL HAS CARDS
     if(originPileElement.lastChild){
 
         // ORIGIN PILE END CARD
@@ -1705,7 +1672,7 @@ allPileElements.forEach((pile, pileIndex) =>{
     console.log(endCardObject)
 
 
-// DESTINATION TYPE: FOUNDATION (ONLY SINGLE CARDS CAN DROP) - so card is moving back from foundation pile to drop pile
+// DESTINATION TYPE: FOUNDATION (ONLY SINGLE CARDS CAN DROP)
 if(destinationPileName.includes('foundation')){
   console.log('destination is a foundation pile')
 
@@ -1727,16 +1694,13 @@ console.log('drop card object')
 MovedCardObject = movedCardTracker[movedCardTracker.length - 1]
 console.log(MovedCardObject)
 
-// ORIGIN END CARD ORIENTATION CHECK - end card was face down
+// ORIGIN END CARD ORIENTATION CHECK
 if(endCardObject.when_flipped === MovedCardObject.when_moved){
   console.log('end card was facedown before drop card moved')
 
 // RESET FACEDOWN ATTRIBUTES
 originLastCardElement.src =  `images/backgnd.jpg`
 originLastCardElement.setAttribute('draggable', false)
-
-// STLYING NOTE: change class attribute from foundationCardEl to cardEl using setAttribute()
-dropCard.setAttribute('class', 'foundationCardEl')
 
 // RETURN / APPEND DROP CARD
 originPileElement.append(dropCard)
@@ -1761,10 +1725,6 @@ console.log(dropPileTracker)
 }else{
 
 console.log('end card was face up before drop card moved')
-
-// STLYING NOTE: change class attribute from foundationCardEl to cardEl using setAttribute()
-dropCard.setAttribute('class', 'cardEl')
-
 // RETURN/APPEND DROP CARD TO ORIGIN
 originPileElement.append(dropCard)
 
@@ -2132,8 +2092,6 @@ console.log(df)
 console.log(realElements)
 
 
-// STLYING NOTE: since multiple card drops can only occur on moves between drop piles, undo moves of multiple cards can only go to another drop pile, so there is no need to change the styling on the group of cards since they all originally had the styling for drop pile cards. 
-
 
   })
 
@@ -2202,11 +2160,6 @@ if(endCardObject.when_flipped === MovedCardObject.when_moved){
  
 
   setTimeout(() => {
-
-    
-// STLYING NOTE: no need for styling class change since this undo was from drop pile to drop pile
-
-
      // RETURN / APPEND DROP CARD - have a small delay for the card's return
   originPileElement.append(dropCard)
   }, 350);
@@ -2242,10 +2195,6 @@ if(endCardObject.when_flipped === MovedCardObject.when_moved){
   }else{// END CARD WAS NOT FLIPPED BY DROP CARD - DROP CARD HISTORY
   
   console.log('end card was face up before drop card moved')
-
-  
-// STLYING NOTE:  no need for style class change since undo was from drop pile to drop pile 
-
   // return drop card to origin pile
   originPileElement.append(dropCard)
   
@@ -2336,12 +2285,8 @@ allFoundationElements.forEach((foundation, foundationIndex) =>{
   dropCard = foundation.lastChild
   console.log('dropCard')
   console.log(dropCard)
-  // remove empty pile boarder now that card has returned to origin empty pile
+  // remove empty border
   originPileElement.style.cssText = 'border-style: none;'
-
-  
-// STLYING NOTE: foundation pile undone to drop pile so the styling class attribute has to change from 'cardEl' to 'foundationCardEl' as below; 
-dropCard.setAttribute('class', 'foundationCardEl')
   originPileElement.append(dropCard)
 
   }else{
@@ -2829,9 +2774,6 @@ df.append(child)
 // CHECK DOCUMENT FRAGEMENT
 console.log(df)
 console.log(realElements)
-
-
-// STLYING NOTE: drop pile to drop pile undo so cards don't need their styling class changed. 
   })
 
 })
@@ -2959,7 +2901,6 @@ movedCardTracker.pop()
   originPileElement.append(dropCard)
 
 
-// STLYING NOTE: single card undo, drop pile to drop pile, so no need to change styling class
 }
   }
 
@@ -3005,38 +2946,6 @@ const drop = (event) =>{
 
 
 
-if(event.target.id.includes('foundation')){
-  let specificPile = event.target.id;
-  switch(specificPile){
-    case 'foundation-one':
-      foundationPileOne.style.backgroundImage = ''
-    break;
-
-    case 'foundation-two':
-      foundationPileTwo.style.backgroundImage = ''
-    break;
-
-    case 'foundation-three':
-      foundationPileThree.style.backgroundImage = ''
-    break;
-
-    case 'foundation-four':
-      foundationPileFour.style.backgroundImage = ''
-    break;
-
-  }
-}
-
-
-// foundationPilesEl.forEach(foundation =>{
-//   console.log(foundation)
-//   // foundation.childNodes.cssText = 'margin-top:0px;'
-//   if(foundation.children.length > 0){
-//     console.log(foundation.children)
-//     // foundation.children.style.cssText = 'margin-top:0px;'
-//   }
-// })
-
 
 // ASSESS CONDITION OF WASTE PILE AND PICK PILE HERE ---------
 
@@ -3051,26 +2960,11 @@ if(event.target.id.includes('foundation')){
 
   // THIS COULD BE IN A FUNCTION 
   // get id data from dragged card
-  console.log('checking data transfer object')
-  console.log(event)
-
-  if(event.dataTransfer.getData("text/plain")){
   const id = event.dataTransfer.getData("text/plain");
-  let dataTransferArray = []
-dataTransferArray.push(id)
   // create new object using id 
+  if(id){
   const newObj = document.getElementById(id);
 
-  // IF OBJECT DOES NOT DROP, THEN HALT DON'T RUN THE REST OF THE FUNCTION AND RENDER THE ALERT
-  if(newObj == null){
-    alert('card was not dropped')
-  }else{
-console.log('card dropped successfully')
-
-  
-console.log('new object test')
-console.log(newObj)
-  console.log(dataTransferArray )
   // extract integer value from id
 let objBaseValue = parseInt(newObj.id)
 // convert number to card's true value
@@ -3084,18 +2978,7 @@ let dropCardSuitColor;
 
 
 
-// for changing foundation card styling
-function styleFoundationElement(foundation){
 
-console.log(foundation)
-  foundation.childNodes.forEach(child =>{
-    child.classList.remove('cardEl')
-    child.setAttribute('class','foundationCardEl')
-  console.log(child)
-  
-  })
-
-}
 
 
 
@@ -3114,8 +2997,8 @@ let objectType = object.getAttribute('class')
 // CARD HAS 'DRAGGING' CLASS PRIOR TO DROP SO REMOVE NOW CARD IS DROPPED
 if(objectType.includes('dragging')){
    object.classList.remove('dragging')
-
 }
+
 
 
 
@@ -3127,15 +3010,8 @@ if(objectType.includes('dragging')){
   console.log('waste card object dropped elsewhere');
   console.log(object);
 // the card loses its status as waste card and becomes a normal card
-// if the card from the waste pile drops on a foundation pile then give it the foundationCardEl class which changes its style properties so that the card displays directly above the card it sits on; only the top card will display. 
-    if(event.target.id.includes('foundation')){
-      object.setAttribute('class','foundationCardEl')
-      object.classList.remove('cardElWaste');
-    }else{
-
-    }
-
-
+    object.classList.remove('cardElWaste');
+    object.classList.add('cardEl'); 
 
     // FUNCTION FOR DEALING WITH WASTE CARD DROP
     preUpdateWaste(object)
@@ -3152,25 +3028,7 @@ event.preventDefault()
 // this is the destination 
 console.log('event target - drop pile')
 console.log(event.target)
-
-// for foundation pile drops, we'll remove the 'cardEl' class and add the 'foundationCardEl' class, which can then be styled for the cards to sit directly on top of one another. 
-if(event.target.id.includes('foundation')){
-  console.log('target is foundation pile, change card class from cardEl to foundationCardEl')
-  event.target.appendChild(object)
-styleFoundationElement(object, event.target)
-}else{
-  // if the drop card doesn't have the cardEl property when it is appended to a drop pile then add the class
-  if(!objectType.includes('pile')){
-    if(objectType.includes('foundationCardEl')){
-object.setAttribute('class', 'cardEl')
-    }
 event.target.appendChild(object)
-  }else{
-    event.target.appendChild(object)
-  }
-
-}
-
 
 // once any card has been moved from drop piles or pick piles the undo button will appear - when the game is solved breadcrumbs will be cleared so button will disappear, preventing accidental use of the undo button after game completion. 
 if(breadcrumbArray.length > 0){
@@ -3858,7 +3716,6 @@ const emptyFoundationPlaceAce = () =>{
   if(tempDragCardArr.length > 0){
     breadcrumbArray.push(tempDragCardArr[0])
   }
-console.log('ace object sent for drop from line 3746')
 
     cardType(newObj)
 }
@@ -3950,89 +3807,52 @@ console.log('wasteCardTracker')
 console.log(wasteCardTracker)
 console.log('pickCardTracker')
 console.log(pickCardTracker)
-
-// WHEN PICK DECK CARDS ARE SPENT
-if(wasteCardTracker.length < 1 && pickCardTracker.length === 0){
-  // reset facedown cards for each time the check runs. 
+if(wasteCardTracker.length < 2 && pickCardTracker.length === 0){
+  // reset facedown cards for each time the check runs
  faceDownCards = 0;
   console.log('pick pile and waste pile are empty')
-
-console.log(`auto solve possible variable ${autoSolvePossible}
-
-if auto solve variable is zero CARD ORIENTATION CHECK WILL RUN
-`)
-  // if autosovepossible variable is 0 the check for card orientation will be done and will continue to be done on every card drop after the pick deck is empty, until all cards are face up; at which point  the autosolvepossible variable will be incremented to '1'. The check will no longer run since the conditions for checking is no longer met.  Once cards are face up they cannot become facedown again so once they are all face up, the condition remains until the end of the game.   
+console.log(`auto solve possible variable ${autoSolvePossible}`)
+  // if autosovepossible variable is 1 the check for card orientation has been done and it was already found that all cards are face us, so the check (which is inside this condition) will not run since, once cards are oriented in a face up position, they cannot be facedown again, so once this situation of all cards being oriented face up is achieved, the sate remains for the rest of the game. 
   if(autoSolvePossible < 1){ 
 
-allPileElements.forEach(pile =>{
+console.log('auto solve is possible')
 
-  // variable for number of populated piles:
-  let populatedPiles = 7;
-  // variable to be incrimented if specific pile first card is face up 
-  let faceUpFirstChild = 7;
-  // if the pile is populated
+// loop through drop piles 
+dropPileTracker.forEach(pile =>{  // on each drop pile
+  // if the first card's tracking object has an empty string for the when_flipped property it must still be face down
+console.log('checking drop pile face down cards')
+  // forgot that the pile needs to actually have cards in order to check otherwise this will fail.  The tracking array will have contain no elements on which to check the 'when_flipped' property; only do this on populated piles. 
+  if(pile.length > 0){
+    console.log(pile)
+    console.log(pile[0])
 
-  let variableDifference = populatedPiles - faceUpFirstChild
-  if(pile.firstChild){
-// retain populated pile (variable only reduces if a pile is empty)
-    populatedPiles = populatedPiles
-  // get 'draggable' attribute value of first child
-  let draggableState = pile.firstChild.getAttribute('draggable')
-  // if draggable: TRUE
-  if(draggableState === true){
-    // retain faceUpFirstChild value
-    faceUpFirstChild = faceUpFirstChild
-  }else{
-    // otherwise decrement faceUpFirstChild previous value
-    faceUpFirstChild --
+    if(pile[0].when_flipped >= 0 || pile[0].when_flipped !==''){
+      //when_flipped has a value, so don't increment
+      faceDownCards = faceDownCards
+        }else{
+
+              // otherwise  increment the faceDownCards variable
+      faceDownCards +=1
+        }
+    
   }
-
-  }else{
-    // pile is empty so decrement number of piles variable
-    populatedPiles --
-    // since pile is empty, there is no face down card on that pile, so decrement
-    faceUpFirstChild --
-  }
-
-// NOTE ON THE LOGIC FOR THE ABOVE LOOP - if the populated pile variable decrements by 1, then the face up first child variable must decrement by 1; the converse is NOT true. If the faceUpFirst variable is decremented by 1, the populated pile doesn't necessarily have to decrement. This is because the if the pile is populated the populated variables doesn't decrement, but if the first card is face down, then the first card variable does.  After the loop is complete, the populated pile variable will either be equal to or greater than the first child face up variable. Therefore the difference of the two variable will either be zero, if the variables are equal to each other, otherwise the difference variable will be equal to or greater than 1. 
-
-
-  if(variableDifference === 0){
-    // then for every populated pile, the first card is face up so there are no facedown cards
-    faceDownCards = 0
-    // increment autoSolvePossible variable since the function is no longer needed as all cards are face up; and it is not possible to reverse that scenario using conventional moves. an autoSolvePossible value of greater than zero causes the loop to be ignored. 
-    autoSolvePossible ++
-  }else{
-    // this number will be 1 or greater. so there are still faceup cards
-    faceDownCards = variableDifference
-  
-
-    console.log('there are still facedown cards')
-  }
-
 
 })
 
 
-// after loop has run if the number of populated piles is equal to the number of face up first child pile elements, then all the first card of each populated pile is face up and therefore all drop pile cards are face up.  The two variables can replace the faceDownCards variable using equality on integer numbers. But first check that populated piles =  
-
-
 // with the parent condition met, ONCE ALL CARDS ARE FACEUP, the game can be solved. 
 if(faceDownCards === 0){ // all cards are facing up, and game completion must be possible. So give player the option to auto complete game. NOTE* if the player continues the game, there is no need to re-run this function because this current condition always applies; pick cards and all other cards are already facing upward. 
-  console.log('auto solve is possible')
 
   console.log('all cards are facing up - show solve button')
-
-
-
-// SHOW AUTO SOLVE BUTTON
-
+// show auto solve button 
   solveBtn.style.cssText = 'display:block;'
 
-
   alert('would you like to auto solve this game? if so click the solve button')
+  // increase cards finish variable, which will prevent the 'faceup' check running again. 
+  autoSolvePossible += 1
 
-// 
+// REMOVE EVENT LISTENER FROM PICK PILE
+
 undoBtn.style.cssText = 'display:none;'
   // CHANGE IMAGES FOR PICK PILE AND WASTE PILE
     // CREATE NEW IMAGE ELEMENT
@@ -4082,11 +3902,8 @@ undoBtn.style.cssText = 'display:none;'
 console.log(dropPileTracker)
 console.log(foundationTracker)
 console.log(breadcrumbArray)
-}
-
-  }
-else{
-    console.log('ID is null, failed card drop - try again')
+}else{
+    console.log('failed card drop - try again')
   }
 
 }
@@ -4115,113 +3932,60 @@ function useArrays(newdrop, newFoundation){
 
 // function for placing cards into solved state
 const placeAllCards = (map) =>{
+/*
+BROAD MOVEMENTS:
+-get the pile index of the map object under examination
+- using the correct pile get the card which corresponds to the object
+- append the card from the end of the drop pile to the end of the foundation pile
 
-  let indexOfDropPile;
+*/
+
+
+// function for dropping cards to foundation piles, one card per second, to complete the game
+  function delayCardDrop(mapIndex, pileIndex, foundationIndex){
+    setTimeout(() => {
+// map index comes from the solution map, indicating which step in the path to solution is in process
+// pile index is for the parent of the card to be moved to foundation index
+// foundationIndex is used to decide where to append the card
+      allFoundationElements[foundationIndex].append(allPileElements[pileIndex].lastChild)
+
+      console.log(i)
+    }, 1000*mapIndex);
+
+    if(mapIndex === solutionMapArray.length){
+      alert('GAME IS COMPLETE')
+      breadcrumbArray = []
+    }
+  }
+
+
+
+
+
+let indexOfDropPile;
 let foundationIndex;
 let dropObjValue;
+let dropCardValue;
+let mapIndex = 0;
+  map.forEach(step =>{
+    indexOfDropPile = step.drop_pile_index;
+    foundationIndex = step.foundation_pile_index
+    dropObjValue = step.moved_values.drop_pile_end_card
 
+    // get card 
+    console.log('map step')
+console.log(step)
+    console.log('card object')
+    console.log(allPileElements[indexOfDropPile].lastChild)
+// console.log(allPileElements[dropPileIndex])
+console.log('foundation pile to have card appended')
+console.log(allFoundationElements[foundationIndex])
+mapIndex++
+delayCardDrop(mapIndex, indexOfDropPile, foundationIndex)
+// append card to foundation pile
 
-
-
-function moveCard(mapIndex){
-
-
-let mapDetails = map[mapIndex]
-
-// only  if index retruns a map object
-if(mapDetails){
-
-// get drop pile and foundation index as well as card value 
-indexOfDropPile = mapDetails.drop_pile_index;
-foundationIndex = mapDetails.foundation_pile_index
-dropObjValue = mapDetails.moved_values.drop_pile_end_card
-
-// get card object using index
-
-let cardObject = allPileElements[indexOfDropPile].lastChild
-
-
-// add class for transitions so the card can change position
-cardObject.setAttribute('class','cardEl card-bordercard-transition duration-1')
-
-// GET X/Y VALUES OF END CARD AND DESTINATION FOUNDATION
-    // get viewport position information of card 
-    let cardCoords = cardObject.getBoundingClientRect()
-
-    
-    // object for x/y coordinates of card 
-    let cardXYObj = {
-      'x':cardCoords.x,
-      'y':cardCoords.y
-    }
-
-    // get viewport position of foundation 
-let foundationCoords = allFoundationElements[foundationIndex].getBoundingClientRect()
-
-// object for x/y coordinates of card
-let foundationXYObj = {
-'x':foundationCoords.x,
-'y':foundationCoords.y
-}   
-
-
-
-// CALCULATE CARD X/Y TRANSLATION REQUIREMENTS
-let xTranslation = foundationXYObj.x - cardXYObj.x + 30
-let yTranslation = foundationXYObj.y - cardXYObj.y  +30 
-
-cardObject.style.transform = `translate(${xTranslation}px, ${yTranslation}px)`
-swooshSound.play()
-
-
-
-// if current index argument is not the highest index of the map array
-// if(mapIndex < map.length -1)
-if(mapIndex < map.length)
-{
-
-
-// wait two seconds, then increment index, and re-run function with next index 
-setTimeout(() => {
-  // just prior to appending card change style class to that which removes its cascade height so it sits directly on top of the previous card. 
-  cardObject.setAttribute('class', 'foundationCardEl')
-
-  // also, revert the translation back to zero for both x and y. The purpose of translation is for the visual effect of moving the card from the drop pile to the foundation pile, but when the card is appended to the foundation pile, if the translations are still on it, then it will sit X pixels and Y pixels outside of the intended position; the x/y translations need to be zero once the card sits in its destination
-  cardObject.style.transform = `translate(${0}px, ${0}px)`
-  
-  
-  // now append the card. Because of the tiny duration between reset of translations and card append; the movement that the card will do back to the end of a drop pile from the foundation prior to getting appended will be imperceptible. I assume this in occuring within a few thousandths of a second. 
-  foundationDrop.play()
-  allFoundationElements[foundationIndex].appendChild(cardObject)
-
-  // increase the index to get the next step in the map array and repeat the process for the next card (if the index is still a valid index for the array)
-  mapIndex ++
-  moveCard(mapIndex)
-}, 1100);
-
-}else{
-console.log('mapping complete')
-
-
-
+  })
 }
-
-}else{
-// refresh page 
-// refreshBtn.style.display = 'block'
-}
-
-
-}
-
-moveCard(0)
-
-
-
-
-
-}
-
 // AUTO-COMPLETE CHECK TO SEE IF ALL CARDS ARE FACE UP
 function comparePileCard(fPile, index){
 
