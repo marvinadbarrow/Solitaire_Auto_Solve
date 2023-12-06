@@ -697,6 +697,15 @@ const preUpdateWaste = (cardObject) =>{
   console.log(newTopCardObject)
   if(wasteCardTracker.length > 1){
     updateWaste(newTopCardObject)  
+  }else{
+    
+    let getNewDeckCard = document.createElement('img')
+    getNewDeckCard.src = 'images/reveal_deck_card.png'; 
+    getNewDeckCard.style.cssText = 'outline: 5px solid yellow; outline-offset: 3px;'
+    getNewDeckCard.setAttribute('class', 'cardEl')
+    wastePile.append(getNewDeckCard)
+    
+  emptyPile.play()
   }
   // updateWaste(newTopCardObject)
 }
@@ -3571,6 +3580,12 @@ if(wasteCardTracker.length > 0 && wasteCardTracker[0].primary_card.card === pars
   
   // console.log('card moved from waste pile')
  
+
+
+
+
+
+
   let wasteObj = {
     primary_card: {
           card:  wasteCardTracker[0].primary_card.card,
