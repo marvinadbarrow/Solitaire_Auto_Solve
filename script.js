@@ -1000,7 +1000,7 @@ const dragEnd = (event) =>{
 
 // ENTER DROP TARGET
 const dragEnter = (event) =>{
-  event.target.classList.add('enter')
+  // event.target.classList.add('enter')
 // the class added causes the target pile to be highighted with a red solid 4px border
 }
 
@@ -1014,7 +1014,8 @@ const dragOver = (event) =>{
 // LEAVE DROP TARGET
 const dragLeave = (event) =>{
   // NOTE, the event target is the PILE
-  event.target.classList.remove('enter');// gets rid of highlight
+  // event.target.classList.remove('enter');
+  // gets rid of highlight
 }
  
 // we need an auto reset for the non ace drop. 
@@ -3582,12 +3583,29 @@ const drop = (event) =>{
   console.log('logging drop event')
 console.log(event)
 
+// a possible solution for being able drop cards onto a pile without having to carefully position the card, i.e. as long as the card is over the pile, then a drop can be made; currently if the card is over the pile but has triggered one of the children in the pile, i.e. another card, then the drag card will not drop because the intended target is a drop pile.  The plan is to check the id of the event.target, and if it contains the string '.png', then use the parent node as the source element.  NOt sure this is possible. 
+
+// use the cardParent variable identify the intended target pile, even when the drop target is another card rather than the pile
+let cardParent
+
+// if the drop target is a card
+if(event.target.id.includes('.png')){
+
+  // log the message
+  console.log('target is a card')
+  // then use the card's parent for the card parent variable
+  cardParent = event.target.parentNode
+  // check parent in console
+  console.log(cardParent)
+}else{
+  // otherwise the event target is one of the piles 
+  cardParent = event.target
+}
 
 
 
-
-if(event.target.id.includes('foundation')){
-  let specificPile = event.target.id;
+if(cardParent.id.includes('foundation')){
+  let specificPile = cardParent.id;
   switch(specificPile){
     case 'foundation-one':
       foundationPileOne.style.backgroundImage = ''
@@ -3622,10 +3640,10 @@ if(event.target.id.includes('foundation')){
 // ASSESS CONDITION OF WASTE PILE AND PICK PILE HERE ---------
 
  
- event.target.style.opacity = "1";
+ cardParent.style.opacity = "1";
 
   // remove pile highlight
-  event.target.classList.remove('enter')
+
 
  
     // the rest of the function can only continue if data can be extracted from event.dataTransfer (if the card fails to drop, there will be no data available so we want to prevent an attempt to use the data to find the drop object id)
@@ -3709,7 +3727,7 @@ if(objectType.includes('dragging')){
   console.log(object);
 // the card loses its status as waste card and becomes a normal card
 // if the card from the waste pile drops on a foundation pile then give it the foundationCardEl class which changes its style properties so that the card displays directly above the card it sits on; only the top card will display. 
-    if(event.target.id.includes('foundation')){
+    if(cardParent.id.includes('foundation')){
       object.setAttribute('class','foundationCardEl')
       object.classList.remove('cardElWaste');
     }else{
@@ -3732,26 +3750,26 @@ if(objectType.includes('dragging')){
 event.preventDefault()
 // this is the destination 
 console.log('event target - drop pile')
-console.log(event.target)
+console.log(cardParent)
 
 // for foundation pile drops, we'll remove the 'cardEl' class and add the 'foundationCardEl' class, which can then be styled for the cards to sit directly on top of one another. 
-if(event.target.id.includes('foundation')){
+if(cardParent.id.includes('foundation')){
 
   // play foundation drop sound for any card 'dragge4d' to the foundation
   foundationDropPlayer.play()
 
   console.log('target is foundation pile, change card class from cardEl to foundationCardEl')
-  event.target.appendChild(object)
-styleFoundationElement(object, event.target)
+  cardParent.appendChild(object)
+styleFoundationElement(object, cardParent)
 }else{
   // if the drop card doesn't have the cardEl property when it is appended to a drop pile then add the class
   if(!objectType.includes('pile')){
     if(objectType.includes('foundationCardEl')){
 object.setAttribute('class', 'cardEl')
     }
-event.target.appendChild(object)
+cardParent.appendChild(object)
   }else{
-    event.target.appendChild(object)
+    cardParent.appendChild(object)
   }
 
 }
@@ -3767,7 +3785,7 @@ if(breadcrumbArray.length > 0){
 
 
 
-let destination = event.target.id
+let destination = cardParent.id
 // console.log('destination')
 // console.log(destination)
 
@@ -4144,7 +4162,7 @@ if(wasteCardTracker.length > 0 && wasteCardTracker[0].primary_card.card === pars
     primary_card: {
           card:  wasteCardTracker[0].primary_card.card,
           origin:'waste-pile',
-          destination:event.target.id, 
+          destination:cardParent.id, 
           group_elements: ''
              }, 
         when_flipped:breadcrumbArray.length + 1,
@@ -4171,7 +4189,7 @@ let breadcrumbWasteCard = breadcrumbArray[breadcrumbArray.length - 1]
 
       // to get the origin pile it's possible to loop through the tracking array of all foundation piles, check only the end element of each subarray, and whichever one has the card value of the parsed object id, is the object which belongs to the card.  then in the below new object we could copy accross the details that should remain and update the new object, push it to the array for the destination and also push it to the breadcrumb. 
       let rawValue = parseInt(object.id)
-      let destinationPileName = event.target.id
+      let destinationPileName = cardParent.id
       let foundationIndex;
       let foundationName; 
       let foundationObjectDropped;
@@ -4242,7 +4260,7 @@ trueOrigin = droppedObject.primary_card.destination
     primary_card: {
       card:  droppedObject.primary_card.card,
       origin:trueOrigin,
-      destination:event.target.id, 
+      destination:cardParent.id, 
       group_elements: ''
          }, 
     when_flipped:droppedObject.when_flipped,
@@ -4370,7 +4388,7 @@ const emptyPilePlaceKing = () =>{
 // placement on DROP PILE
 const placeNonKing = () =>{
   // get last child in drop target pile
-  let endChild = event.target.lastChild;
+  let endChild = cardParent.lastChild;
  
 // extract id
   let lastChildBaseValue = parseInt(endChild.id)
@@ -4454,7 +4472,7 @@ const foundationPlaceNonAce = () =>{
 if(newObj.childNodes.length < 2){
  // now the current card's color and number needs to be checked against the colour and number of card we are attempting to drop onto
  // get the pile's end card
-  let endChild = event.target.lastChild;
+  let endChild = cardParent.lastChild;
   // get the raw valuie of the end card
   let lastChildBaseValue = parseInt(endChild.id)
   // send card to check its suit
@@ -4472,14 +4490,14 @@ tempDragCardArr.pop()
 
 
 // SWITCH PILE TYPE, then check pile state and drop card to see whether the card meets the initial conditions for dropping on the specific pile in its given state; if the card meets initial conditions, it is sent on to one of the above functions, either for the final decision to drop or for further assessment. 
-switch(event.target){
+switch(cardParent){
   // if the destination is a foundation pile
 case foundationPileOne:
 case foundationPileTwo:
 case foundationPileThree:
 case foundationPileFour:
 // if the pile is empty and the true value of the dragged card is '1', i.e. it is an ace
-if(event.target.childNodes.length === 0 ){
+if(cardParent.childNodes.length === 0 ){
   // drop the card to the empty foundation pile
 if(objTrueValue === 1){ emptyFoundationPlaceAce() // drop the ace}  
 }else{ // PILE EMPTY, but card isn't an ace; illegal move
@@ -4497,7 +4515,7 @@ foundationPlaceNonAce()
   default:   
 if(objTrueValue === 13){ // if card is KING
 // check number of cards in pile
-  switch(event.target.childNodes.length){// check number of cards in pile
+  switch(cardParent.childNodes.length){// check number of cards in pile
     case 0: emptyPilePlaceKing()// if pile is empty, drop king
     break;
     // otherwise pile is not empty; KING drop is illegal
@@ -4506,7 +4524,7 @@ if(objTrueValue === 13){ // if card is KING
 tempDragCardArr.pop()
   }
   }else{ // otherwise card is NON-KING
-    switch(event.target.childNodes.length){
+    switch(cardParent.childNodes.length){
       // if pile is empty - illegal move cannot drop a non-king
       case 0: console.log('cannot drop non-king card on empty space')
       // remove card's tracking object from temporary drag card array
