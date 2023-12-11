@@ -16,10 +16,7 @@ let cardPack = [
   "49.png","50.png","51.png","52.png",]
 
 let cardFlip = new Audio('sounds/card_flip.mp3')
-let foundationDropPlayer = new Audio('sounds/empty_pile_sound.mp3')
-let foundationDropAuto = new Audio('sounds/foundation_drop.mp3')
-let swooshSound = new Audio('sounds/swish_quiet.mp3')
-
+let emptyPile = new Audio('sounds/empty_pile_sound.mp3')
   // FETCHING AUTO SOLVE SCENARIO LAYOUT FOR TESTING SOLVE BUTTON - 
 
   // variables for foundation trackers and drop pile trackers in solve scenario
@@ -84,14 +81,6 @@ const distributeSolvable = (dropPiles, pickPile) =>{
 
 // undo button element
 let undoBtn = document.getElementById('undo-btn')
-// refresh button
-let refreshBtn = document.getElementById('refresh-btn') 
-
-refreshBtn.addEventListener('click', () =>{
-location.reload()
-})
-
-
 
 
 //variabel to add event listeners to all piles using forEach
@@ -354,9 +343,6 @@ let pickCardTracker = []
 let breadcrumbArray = []
 
 
-if(breadcrumbArray.length < 1){
-  refreshBtn.style.cssText = "display:block;"
-}
 
 let allTrackers;
 
@@ -840,7 +826,7 @@ console.log(breadcrumbArray)
 if(breadcrumbArray.length > 0){
   // show button if breadcrumbs exist
   undoBtn.style.display = "block"
-  refreshBtn.style.cssText = "display:none;"
+
 }
 
 }
@@ -1025,15 +1011,11 @@ const dragLeave = (event) =>{
 // similar to MULTI RESET - this runs if multiple cards are clicked but not dragged, or if dragged multiple cards fail drop requirements and are returned to original pile  
 const autoResetGo = (pile,object,wrapper, command) =>{
 
-
 // then we can establish the pile type from its class
 let getPileType = pile.getAttribute('class');
 // console.log(getPileType)
 // console.log(command)
 // console.log(pile)
-
-
-// command will have a value of less than three only if a wrapper was found on the pile, otherwise command will have an integer value of at least 5, because all the id lengths accumulate to give the total lengths of all card id's added together. 
 if(command < 3 && pile.childNodes.length > 0){
 // that means that there's a child in the clicked pile that has an id length of '2' digits or less so it must be a wrapper element so we can remove it (also the 'pile.childNodes.length > 0' ensures that if the exited pile contains no childnodes, then the For Loop for setting children attributes to 'draggable, true' does not run: previously, before adding the childnodes.length condition there was an error being thrown back)
   let wrapperElement = document.getElementById(wrapper.id)
@@ -1050,9 +1032,7 @@ if(command < 3 && pile.childNodes.length > 0){
            // loop through children to add draggable:true; attribute
   for(i = 0; i < object.length ; i++){
   
-    // set each card to draggable true
     children[i].setAttribute('draggable', 'true')
-    // remove the red outline on each card
     children[i].classList.remove('multi-style')
   }
 
@@ -1146,7 +1126,7 @@ let endCardObject // if origin pile is not empty, this object is the tracking ob
 
 // else/if to determine card origin, so the undo can return it.
 
-// ORIGIN PILE OF UNDO CARD
+// if the origin was a foundation or drop pile 
 if(originPileName.includes('foundation')){
   // ONE FORWARD DESTINATION: DROP PILE
 console.log('this card came from a foundation pile')
@@ -1175,7 +1155,8 @@ allPileElements.forEach((pile, pileIndex) =>{
     dropCard = pile.lastChild
     console.log('dropCard')
     console.log(dropCard)
-
+    // so card displays non-cascaded, which is how cards display on the foundation piles, set class attribute as below
+dropCard.setAttribute('class', 'foundationCardEl')
 
 
 
@@ -1187,43 +1168,8 @@ console.log('drop card object')
 MovedCardObject = movedCardTracker[movedCardTracker.length - 1]
 console.log(MovedCardObject)
 
-// GET POSITIONS OF ORIGIN PILE AND CARD TO CALCULATE TRANSFORM:TRANSLATE
-// pile positions
-let originClientPositions = originPileElement.getBoundingClientRect()
-let originPositionObj = {
-  'x':originClientPositions.x,
-  'y':originClientPositions.y,
-  'right':originClientPositions.right,
-  'bottom':originClientPositions.bottom
-}
-
-// drop card positions
-let dropCardClientPositions = dropCard.getBoundingClientRect()
-let dropCardPositionsObj = {
-  'x':dropCardClientPositions.x,
-  'y':dropCardClientPositions.y, 
-  'right':dropCardClientPositions.right,
-  'bottom':dropCardClientPositions.bottom
-}
-
-// the y translaction can be calculated using the bottom of the foundation pile and the bottom of the card.  
-let yDistance = originPositionObj.bottom - dropCardPositionsObj.bottom
-
-let xDistance = originPositionObj.x - dropCardPositionsObj.x + 17
-
-    // card returning to foundation pile from drop pile, so card displays non-cascaded, which is how cards display on the foundation piles, set class attribute as below
-    dropCard.setAttribute('class', 'cardEl card-transition duration-undo')
-    dropCard.style.transform = `translate(${xDistance}px, ${yDistance}px)`
-    setTimeout(() => {
-      
-      // don't set non-cascade until just before card appends which will hopefully drop the card ontop of the others because all of them have the foundationCardEl style class
-      dropCard.setAttribute('class', 'foundationCardEl')
-// remove the translation
-      dropCard.style.transform = `translate(${0}px, ${0}px)`
-      // RETURN / APPEND DROP CARD (to foundation pile)
+// RETURN / APPEND DROP CARD
   originPileElement.append(dropCard)
-    }, 550);
-
 
 
 //TEMPORARY BREADCRUMB STORE
@@ -1441,7 +1387,7 @@ if(testValue === pickCardTracker.length){
     wastePile.firstChild.src = 'images/reveal_deck_card.png'; 
     wastePile.firstChild.style.cssText = 'outline: 5px solid yellow; outline-offset: 3px;'
   }
-
+emptyPile.play()
 }
 
   }
@@ -1503,63 +1449,8 @@ if(destinationPileName.includes('foundation')){
                 if(originPileElement.childNodes.length > 0){
                   originPileElement.removeChild(originPileElement.firstChild)
                   
-                }   
-                
-                
-        
-  // CODE FOR TRANSITION PRIOR TO APPENDING CARD ----------------
-
-
-      // GET POSITIONS OF ORIGIN PILE AND CARD TO CALCULATE TRANSFORM:TRANSLATE
-// pile positions
-let originClientPositions = originPileElement.getBoundingClientRect()
-let originPositionObj = {
-  'x':originClientPositions.x,
-  'y':originClientPositions.y,
-  'right':originClientPositions.right,
-  'bottom':originClientPositions.bottom
-}
-
-// drop card positions
-let dropCardClientPositions = dropCard.getBoundingClientRect()
-let dropCardPositionsObj = {
-  'x':dropCardClientPositions.x,
-  'y':dropCardClientPositions.y, 
-  'right':dropCardClientPositions.right,
-  'bottom':dropCardClientPositions.bottom
-}
-
-// the y translaction can be calculated using the bottom of the foundation pile and the bottom of the card.  
-let yDistance = originPositionObj.y - dropCardPositionsObj.y - 13
-
-let xDistance = originPositionObj.x - dropCardPositionsObj.x + 13
-
-
-
-console.log('DETAILS FOR SMOOTHER FOUNDATION TO WASTE PILE UNDO')
-
-    // card returning to foundation pile from drop pile, so card displays non-cascaded, which is how cards display on the foundation piles, set class attribute as below
-    dropCard.setAttribute('class', 'foundationCardEl card-transition duration-undo')
-    dropCard.style.transform = `translate(${xDistance}px, ${yDistance}px)`
-
-
-    // SET TIMEOUT FOR APPEND SO THAT THE CARD APPENDS 'AFTER' IT MOVES TO THE APPROXIMATE UNDO POSITION
-    setTimeout(() => {
-      
-      // don't set non-cascade until just before card appends which will hopefully drop the card ontop of the others because all of them have the foundationCardEl style class
-      dropCard.setAttribute('class', 'cardElWaste card-border')
-// remove the translation
-      dropCard.style.transform = `translate(${0}px, ${0}px)`
-      // RETURN / APPEND DROP CARD (to foundation pile)
-  originPileElement.append(dropCard)
-    }, 550);
-
-
-  // CODE FOR TRANSITION ------------------------------------
-                
-                
-                
-    
+                }    // RETURN/APPEND DROP CARD TO ORIGIN  in this case it's probably better not to append the card but to change the source 
+                originPileElement.append(dropCard)
 
     // TEMP BREADCRUMB STORE
     let storeBreadcrumb = []
@@ -1727,61 +1618,9 @@ else{
           originPileElement.removeChild(originPileElement.firstChild)
         }
      
-  // CODE FOR TRANSITION ------------------------------------
-
-
-
-        // GET POSITIONS OF ORIGIN PILE AND CARD TO CALCULATE TRANSFORM:TRANSLATE
-// pile positions
-let originClientPositions = originPileElement.getBoundingClientRect()
-let originPositionObj = {
-  'x':originClientPositions.x,
-  'y':originClientPositions.y,
-  'right':originClientPositions.right,
-  'bottom':originClientPositions.bottom
-}
-
-// drop card positions
-let dropCardClientPositions = dropCard.getBoundingClientRect()
-let dropCardPositionsObj = {
-  'x':dropCardClientPositions.x,
-  'y':dropCardClientPositions.y, 
-  'right':dropCardClientPositions.right,
-  'bottom':dropCardClientPositions.bottom
-}
-
-// the y translaction can be calculated using the bottom of the foundation pile and the bottom of the card.  
-let yDistance = originPositionObj.y - dropCardPositionsObj.y  - 13
-
-let xDistance = originPositionObj.x - dropCardPositionsObj.x + 12
-
-    // card returning to foundation pile from drop pile, so card displays non-cascaded, which is how cards display on the foundation piles, set class attribute as below
-    dropCard.setAttribute('class', 'cardEl card-transition duration-undo')
-    dropCard.style.transform = `translate(${xDistance}px, ${yDistance}px)`
-
-
-    // SET TIMEOUT FOR APPEND SO THAT THE CARD APPENDS 'AFTER' IT MOVES TO THE APPROXIMATE UNDO POSITION
-    setTimeout(() => {
-      
-      // don't set non-cascade until just before card appends which will hopefully drop the card ontop of the others because all of them have the foundationCardEl style class
-      dropCard.setAttribute('class', 'cardElWaste card-border')
-// remove the translation
-      dropCard.style.transform = `translate(${0}px, ${0}px)`
-      // RETURN / APPEND DROP CARD (to foundation pile)
-  originPileElement.append(dropCard)
-  // just in case there's an old card left in place, check and remove the previoys one. 
-  if(wastePile.childNodes.length > 1){
-    wastePile.removeChild(wastePile.firstChild)
-  }
-    }, 550);
-
-  
- // CODE FOR TRANSITION ------------------------------------
-         
-         
-
-
-
+        // RETURN/APPEND DROP CARD TO ORIGIN  in this case it's probably better not to append the card but to change the source 
+            originPileElement.append(dropCard)
+        
         // TEMP BREADCRUMB STORE
         let storeBreadcrumb = []
         // STORE CURRENT BREADCRUMB
@@ -1834,13 +1673,13 @@ console.log('pick pile tracker')
 console.log(pickCardTracker)
 console.log('breadcrumbs')
 console.log(breadcrumbArray)
-    }else{  //DROP PILE ORIGIN
-
+    }else{
+  //DROP PILE ORIGIN
       console.log('this card came from a drop pile')
 
 allPileElements.forEach((pile, pileIndex) =>{
   if(pile.id == originPileName){
-        // ORIGIN PILE ELEMENT
+        // ORIGIN PILE
         originPileElement = pile
         // ORIGIN INDEX
     originIndex = pileIndex
@@ -1892,64 +1731,12 @@ if(endCardObject.when_flipped === MovedCardObject.when_moved){
 // RESET FACEDOWN ATTRIBUTES
 originLastCardElement.src =  `images/backgnd.jpg`
 originLastCardElement.setAttribute('draggable', false)
-cardFlip.play()
 
+// STLYING NOTE: change class attribute from foundationCardEl to cardEl using setAttribute()
+dropCard.setAttribute('class', 'foundationCardEl')
 
-
-
-  // CODE FOR TRANSITION ------------------------------------
-
-
-
-        // GET POSITIONS OF ORIGIN PILE AND CARD TO CALCULATE TRANSFORM:TRANSLATE
-// pile positions
-let originClientPositions = originPileElement.getBoundingClientRect()
-let originPositionObj = {
-  'x':originClientPositions.x,
-  'y':originClientPositions.y,
-  'right':originClientPositions.right,
-  'bottom':originClientPositions.bottom
-}
-
-// drop card positions
-let dropCardClientPositions = dropCard.getBoundingClientRect()
-let dropCardPositionsObj = {
-  'x':dropCardClientPositions.x,
-  'y':dropCardClientPositions.y, 
-  'right':dropCardClientPositions.right,
-  'bottom':dropCardClientPositions.bottom
-}
-
-// the y translaction can be calculated using the bottom of the foundation pile and the bottom of the card.  
-let yDistance = originPositionObj.bottom - dropCardPositionsObj.bottom 
-
-let xDistance = originPositionObj.x - dropCardPositionsObj.x + 17
-
-    // card returning to foundation pile from drop pile, so card displays non-cascaded, which is how cards display on the foundation piles, set class attribute as below
-    dropCard.setAttribute('class', 'foundationCardEl card-transition duration-undo')
-    dropCard.style.transform = `translate(${xDistance}px, ${yDistance}px)`
-
-
-    // SET TIMEOUT FOR APPEND SO THAT THE CARD APPENDS 'AFTER' IT MOVES TO THE APPROXIMATE UNDO POSITION
-    setTimeout(() => {
-      
-      // don't set non-cascade until just before card appends which will hopefully drop the card ontop of the others because all of them have the foundationCardEl style class
-      dropCard.setAttribute('class', 'cardEl card-border')
-// remove the translation
-      dropCard.style.transform = `translate(${0}px, ${0}px)`
-      // RETURN / APPEND DROP CARD (to foundation pile)
-  originPileElement.append(dropCard)
-    }, 550);
-
-  
- // CODE FOR TRANSITION ------------------------------------
-         
-
-
-
-
-
-
+// RETURN / APPEND DROP CARD
+originPileElement.append(dropCard)
 
 //because the moved card was on top of a facedown card, it must have been the first move; reset card's object properties to reflect that. 
 
@@ -1972,53 +1759,11 @@ console.log(dropPileTracker)
 
 console.log('end card was face up before drop card moved')
 
-  // CODE FOR TRANSITION ------------------------------------
+// STLYING NOTE: change class attribute from foundationCardEl to cardEl using setAttribute()
+dropCard.setAttribute('class', 'cardEl')
 
-
-
-        // GET POSITIONS OF ORIGIN PILE AND CARD TO CALCULATE TRANSFORM:TRANSLATE
-// pile positions
-let originClientPositions = originPileElement.getBoundingClientRect()
-let originPositionObj = {
-  'x':originClientPositions.x,
-  'y':originClientPositions.y,
-  'right':originClientPositions.right,
-  'bottom':originClientPositions.bottom
-}
-
-// drop card positions
-let dropCardClientPositions = dropCard.getBoundingClientRect()
-let dropCardPositionsObj = {
-  'x':dropCardClientPositions.x,
-  'y':dropCardClientPositions.y, 
-  'right':dropCardClientPositions.right,
-  'bottom':dropCardClientPositions.bottom
-}
-
-// the y translaction can be calculated using the bottom of the foundation pile and the bottom of the card.  
-let yDistance = originPositionObj.bottom - dropCardPositionsObj.bottom 
-
-let xDistance = originPositionObj.x - dropCardPositionsObj.x + 17
-
-    // card returning to foundation pile from drop pile, so card displays non-cascaded, which is how cards display on the foundation piles, set class attribute as below
-    dropCard.setAttribute('class', 'foundationCardEl card-transition duration-undo')
-    dropCard.style.transform = `translate(${xDistance}px, ${yDistance}px)`
-
-
-    // SET TIMEOUT FOR APPEND SO THAT THE CARD APPENDS 'AFTER' IT MOVES TO THE APPROXIMATE UNDO POSITION
-    setTimeout(() => {
-      
-      // don't set non-cascade until just before card appends which will hopefully drop the card ontop of the others because all of them have the foundationCardEl style class
-      dropCard.setAttribute('class', 'cardEl card-border')
-// remove the translation
-      dropCard.style.transform = `translate(${0}px, ${0}px)`
-      // RETURN / APPEND DROP CARD (to foundation pile)
-  originPileElement.append(dropCard)
-    }, 550);
-
-  
- // CODE FOR TRANSITION ------------------------------------
-         
+// RETURN/APPEND DROP CARD TO ORIGIN
+originPileElement.append(dropCard)
 
 // TEMP BREADCRUMB STORE
 let storeBreadcrumb = []
@@ -2355,17 +2100,7 @@ function removeBreadcrumbs(howMany){
 
 }
 
-// NOTE: THE APPENDING OF CARDS WILL HAVE TO BE DONE IN A DIFFERENT WAY.  A div needs to be created, inserted into the pile before the first card, then all cards from the selected onward need to be appended to the wrapper. Then the the position values of the wrapper need to be worked out (as well as the origin position values), after which, the translation values can be calculated, the translation can be executed, the wrapper appended to the origin pile, and then each card in the wrapper can be inserted 'before' the wrapper and finally the wrapper can be deleted from the pile.
-
-
-
 // ------- APPENDING ALL CARDS BACK TO ORIGIN -------------------
-
-
-
-
-
-
 
       // CREATE DOCUMENT FRAGMENT TO APPEND MULTIPLE CARDS 
       let df = new DocumentFragment()
@@ -2373,105 +2108,36 @@ function removeBreadcrumbs(howMany){
       let realElements = []
       //LOOP THROUGH DESTINATION PILE 
 destinationPileElement.childNodes.forEach((child, childIndex) =>{
-
+  console.log(child)
 
   // FROM PRIMARY CARD ONWARD 
   if(childIndex >= groupStartIndex){
+    // CREATE CLONE CARD
+    let newChild = child.cloneNode(false)
+    // PUSH CLONE TO TEMPORARY ELEMENT ARRAY 
+    tempGroupElementsArr.push(newChild)
+     // PUSH CARD HTML NODE TO REAL ELEMENT ARRAY 
     realElements.push(child)
   }
 
+ // APPEND EACH CLONE FROM TEMPORARY ELEMENT TO DOCUMENT FRAGMENT
+  tempGroupElementsArr.forEach(child =>{
+    console.log(child)
+df.append(child)
+// CHECK DOCUMENT FRAGEMENT
+console.log(df)
+console.log(realElements)
+
+
+// STLYING NOTE: since multiple card drops can only occur on moves between drop piles, undo moves of multiple cards can only go to another drop pile, so there is no need to change the styling on the group of cards since they all originally had the styling for drop pile cards. 
+
+
+  })
 
 })
-
-
-
-// I THINK THAT THE WRAPPER NEEDS TO BE CREATED AND APPENDED 'AFTER' THE ELEMENTS HAVE BEEN PUSHED TO THE REAL ELEMENTS ARRAY, OTHERWISE THE ELEMENTS PUSHED TO THE ARRAY WILL INCLUDE THE WRAPPER; AND THAT'S NOT THE INTENDED BEHAVIOUR - -----------------------------------------------------------------------------------------------------------------------------
-
-// create wrapper; 
-let newWrapper = document.createElement('div')
-// correctly the wrapper should be inserted to the DESTINATION rather than the origin
-let wrapperParent = groupStartCard.parentNode
-
-// use end card object width as a guide for the wrapper width
-newWrapper.setAttribute('width', groupStartCard.getBoundingClientRect().width)
-
-newWrapper.setAttribute('id', 'temp-wrapper')
-
-
-// set wrapper height so it will grow to fit the number of cards appeneded to it. 
-newWrapper.style.cssText = 'height: fit-content;'
-
-
-// insert wrapper and then check destination pile to see it has worked. 
-wrapperParent.insertBefore(newWrapper, groupStartCard)
-realElements.forEach(child =>{
-  newWrapper.append(child)
-})
-
-
-
-
-console.log('checking wrapper element has appended and elements are appended to it')
-console.log(wrapperParent)
-// elements successfully appended to the wrapper...  NOW IT'S A MATTER OF GETTING ORIGIN POSITION DETAILS AND WRAPPER POSITION DETAILS. 
-let wrapperPositions = newWrapper.getBoundingClientRect()
-let wrapperPositionObj = {
-  'x': wrapperPositions.x,
-  'y': wrapperPositions.y
-}
-
-
-// get origin pile positions
-let originPositions = originPileElement.getBoundingClientRect()
-// create an object for the positions
-let originPositionObj = {
-  'x': originPositions.x,
-  'bottom': originPositions.bottom
-}
-
-let xDistance = originPositionObj.x - wrapperPositionObj.x +17
-let yDistance = originPositionObj.bottom - wrapperPositionObj.y
-
-console.log('wrapper positions')
-console.log(wrapperPositionObj)
-
-console.log('distances: x, y')
-console.log(xDistance, yDistance)
-
-// ADD TRANSITIONS AND TRANSLATE TO WRAPPER
-newWrapper.setAttribute('class', 'card-transition duration-undo')
-
-// set translation
-newWrapper.style.transform =  `translate(${xDistance}px, ${yDistance}px)`
-
-// append the wraper to the origin pile
-setTimeout(() => {
-
-  // reset translation
-newWrapper.style.transform =  `translate(${0}px, ${0}px)`
-  originPileElement.append(newWrapper)
-
-  // REMOVE WRAPPER - while new wrapper has a first child
-  while (newWrapper.firstChild){
-    // on the origin element insert the wrapper's first child, before the new wrapper
-    originPileElement.insertBefore(newWrapper.firstChild, newWrapper);
-  } 
-
-  // when there are no more elements in the wrapper
-  if(newWrapper.childNodes.length < 1){
-    // delete the wrapper from the pile
-    originPileElement.removeChild(newWrapper);
-    }
-
-
-}, 510);
-// END OF TRANSFORM/TRANSLATE FOR MULTIPLE CARDS TO NON-EMPTY PILE: ----------------------------------------------------------------------------------------------------------------------------------
-
-
-
-// // APPEND DOCUMENT FRAGMENT TO ORIGIN PILE
-// originPileElement.append(df)
-// // CLEAR TEMPORARY ELEMENTS ARRAY
+// APPEND DOCUMENT FRAGMENT TO ORIGIN PILE
+originPileElement.append(df)
+// CLEAR TEMPORARY ELEMENTS ARRAY
 tempGroupElementsArr = []
 // CLEAR REAL ELEMENTS ARRAY - I don't think this array is needed but keeping it for the moment until complete refactor of code base. 
 realElements = []
@@ -2482,18 +2148,18 @@ realElements = []
 // -- ALL TRACKING COMPLETE REPOSITIONING; REMOVE CARD ELEMENTS
 
 // REMOVE UNDO CARDS FROM DESTNATION PILE
-// function removeCardElements(howMany){
-  // destinationPileElement.removeChild(destinationPileElement.lastChild)
-  // howMany --
-  // if(howMany > 0){
-  //   removeCardElements(howMany)
-  // }else{
-  //   console.log('all cards removed')
-  // }
+function removeCardElements(howMany){
+  destinationPileElement.removeChild(destinationPileElement.lastChild)
+  howMany --
+  if(howMany > 0){
+    removeCardElements(howMany)
+  }else{
+    console.log('all cards removed')
+  }
   
   
-  // }
-  // removeCardElements(groupElementsValue)
+  }
+  removeCardElements(groupElementsValue)
   
 
 
@@ -2520,8 +2186,7 @@ console.log('group elements object type')
   console.log('dropCard')
   console.log(dropCard)
 
-  console.log('drop card position details')
-  console.log(dropCard.getBoundingClientRect())
+
 
 // ORIGIN END CARD ORIENTATION CHECK
 if(endCardObject.when_flipped === MovedCardObject.when_moved){
@@ -2533,53 +2198,15 @@ if(endCardObject.when_flipped === MovedCardObject.when_moved){
   cardFlip.play()
  
 
-  // CODE FOR TRANSITION ------------------------------------
+  setTimeout(() => {
+
+    
+// STLYING NOTE: no need for styling class change since this undo was from drop pile to drop pile
 
 
-
-        // GET POSITIONS OF ORIGIN PILE AND CARD TO CALCULATE TRANSFORM:TRANSLATE
-// pile positions
-let originClientPositions = originPileElement.getBoundingClientRect()
-let originPositionObj = {
-  'x':originClientPositions.x,
-  'y':originClientPositions.y,
-  'right':originClientPositions.right,
-  'bottom':originClientPositions.bottom
-}
-
-// drop card positions
-let dropCardClientPositions = dropCard.getBoundingClientRect()
-let dropCardPositionsObj = {
-  'x':dropCardClientPositions.x,
-  'y':dropCardClientPositions.y, 
-  'right':dropCardClientPositions.right,
-  'bottom':dropCardClientPositions.bottom
-}
-
-// the y translaction can be calculated using the bottom of the foundation pile and the bottom of the card.  
-let yDistance = originPositionObj.bottom - dropCardPositionsObj.bottom
-
-let xDistance = originPositionObj.x - dropCardPositionsObj.x + 17
-
-    // card returning to foundation pile from drop pile, so card displays non-cascaded, which is how cards display on the foundation piles, set class attribute as below
-    dropCard.setAttribute('class', 'cardEl card-transition duration-undo')
-    dropCard.style.transform = `translate(${xDistance}px, ${yDistance}px)`
-
-
-    // SET TIMEOUT FOR APPEND SO THAT THE CARD APPENDS 'AFTER' IT MOVES TO THE APPROXIMATE UNDO POSITION
-    setTimeout(() => {
-      
-      // don't set non-cascade until just before card appends which will hopefully drop the card ontop of the others because all of them have the foundationCardEl style class
-      dropCard.setAttribute('class', 'cardEl card-border')
-// remove the translation
-      dropCard.style.transform = `translate(${0}px, ${0}px)`
-      // RETURN / APPEND DROP CARD (to foundation pile)
+     // RETURN / APPEND DROP CARD - have a small delay for the card's return
   originPileElement.append(dropCard)
-    }, 550);
-
-  
- // CODE FOR TRANSITION ------------------------------------
-         
+  }, 350);
   
   //because the moved card was on top of a facedown card, it must have been the first move; reset card's object properties to reflect that. 
   
@@ -2614,53 +2241,11 @@ let xDistance = originPositionObj.x - dropCardPositionsObj.x + 17
   console.log('end card was face up before drop card moved')
 
   
-  // CODE FOR TRANSITION ------------------------------------
+// STLYING NOTE:  no need for style class change since undo was from drop pile to drop pile 
 
-
-
-        // GET POSITIONS OF ORIGIN PILE AND CARD TO CALCULATE TRANSFORM:TRANSLATE
-// pile positions
-let originClientPositions = originPileElement.getBoundingClientRect()
-let originPositionObj = {
-  'x':originClientPositions.x,
-  'y':originClientPositions.y,
-  'right':originClientPositions.right,
-  'bottom':originClientPositions.bottom
-}
-
-// drop card positions
-let dropCardClientPositions = dropCard.getBoundingClientRect()
-let dropCardPositionsObj = {
-  'x':dropCardClientPositions.x,
-  'y':dropCardClientPositions.y, 
-  'right':dropCardClientPositions.right,
-  'bottom':dropCardClientPositions.bottom
-}
-
-// the y translaction can be calculated using the bottom of the foundation pile and the bottom of the card.  
-let yDistance = originPositionObj.bottom - dropCardPositionsObj.bottom
-
-let xDistance = originPositionObj.x - dropCardPositionsObj.x + 17
-
-    // card returning to foundation pile from drop pile, so card displays non-cascaded, which is how cards display on the foundation piles, set class attribute as below
-    dropCard.setAttribute('class', 'cardEl card-transition duration-undo')
-    dropCard.style.transform = `translate(${xDistance}px, ${yDistance}px)`
-
-
-    // SET TIMEOUT FOR APPEND SO THAT THE CARD APPENDS 'AFTER' IT MOVES TO THE APPROXIMATE UNDO POSITION
-    setTimeout(() => {
-      
-      // don't set non-cascade until just before card appends which will hopefully drop the card ontop of the others because all of them have the foundationCardEl style class
-      dropCard.setAttribute('class', 'cardEl card-border')
-// remove the translation
-      dropCard.style.transform = `translate(${0}px, ${0}px)`
-      // RETURN / APPEND DROP CARD (to foundation pile)
+  // return drop card to origin pile
   originPileElement.append(dropCard)
-    }, 550);
-
   
- // CODE FOR TRANSITION ------------------------------------
-         
   
   //TEMPORARY BREADCRUMB STORE
   let storeBreadcrumb = []
@@ -2725,9 +2310,9 @@ let xDistance = originPositionObj.x - dropCardPositionsObj.x + 17
 }
 
   
-    }else{// IF ORIGIN IS AN EMPTY PILE
+    }else{// ORIGIN IS AN EMPTY PILE
       
-      // ORIGIN PILE TRACKER
+      // origin pile tracker
       endCardPileTracker = dropPileTracker[pileIndex]
       // otherwise show pile.  The card can just be dropped back to the previous location
       console.log('origin pile empty')
@@ -2742,6 +2327,8 @@ allFoundationElements.forEach((foundation, foundationIndex) =>{
   // assign index variable
   dropIndex = foundationIndex
 
+  // probably not necessary but for debugging of any unexpected issues. 
+  if(foundation.lastChild){
   // get drop card
   dropCard = foundation.lastChild
   console.log('dropCard')
@@ -2749,61 +2336,14 @@ allFoundationElements.forEach((foundation, foundationIndex) =>{
   // remove empty pile boarder now that card has returned to origin empty pile
   originPileElement.style.cssText = 'border-style: none;'
 
-
-
-// TRANSFORM /  TRANSLATE CODE --------------------------------------
-
-  // GET POSITIONS OF ORIGIN PILE AND CARD TO CALCULATE TRANSFORM:TRANSLATE - this is a foundation card returning to an empty drop pile
-
-// pile positions
-let originClientPositions = originPileElement.getBoundingClientRect()
-let originPositionObj = {
-  'x':originClientPositions.x,
-  'y':originClientPositions.y,
-  'right':originClientPositions.right,
-  'bottom':originClientPositions.bottom
-}
-
-// drop card positions
-let dropCardClientPositions = dropCard.getBoundingClientRect()
-let dropCardPositionsObj = {
-  'x':dropCardClientPositions.x,
-  'y':dropCardClientPositions.y, 
-  'right':dropCardClientPositions.right,
-  'bottom':dropCardClientPositions.bottom
-}
-
-
-
-// the y translaction can be calculated using the bottom of the foundation pile and the bottom of the card.  
-let yDistance = originPositionObj.bottom - dropCardPositionsObj.bottom
-
-let xDistance = originPositionObj.x - dropCardPositionsObj.x + 17
-
-    // card returning to foundation pile from drop pile, so card displays non-cascaded, which is how cards display on the foundation piles, set class attribute as below
-    dropCard.setAttribute('class', 'cardEl card-transition duration-undo')
-    dropCard.style.transform = `translate(${xDistance}px, ${yDistance}px)`
-    setTimeout(() => {
-      
-      // STLYING NOTE: foundation pile undone to drop pile so the styling class attribute has to change from 'foundationCardEl' to 'cardEl' as below; 
-
-
-      // don't set non-cascade until just before card appends which will hopefully drop the card ontop of the others because all of them have the foundationCardEl style class
-      dropCard.setAttribute('class', 'cardEl card-border')
-// remove the translation
-      dropCard.style.transform = `translate(${0}px, ${0}px)`
-      // RETURN / APPEND DROP CARD (to foundation pile)
+  
+// STLYING NOTE: foundation pile undone to drop pile so the styling class attribute has to change from 'cardEl' to 'foundationCardEl' as below; 
+dropCard.setAttribute('class', 'foundationCardEl')
   originPileElement.append(dropCard)
-    }, 550);
 
-  // TRANSFORM TRANSLATE CODE : END ------------------------------
-
-
-
-
-
-
-
+  }else{
+    console.log('foundation card does not exist although it should since the destination is a foundation - INVESTIGATE')
+  }
 
 movedCardTracker = foundationTracker[foundationIndex]
 MovedCardObject = movedCardTracker[movedCardTracker.length - 1]
@@ -2930,7 +2470,7 @@ let groupElementsValue = MovedCardObject.primary_card.group_elements
 // GET VALUE OBJECT TYPE
 let valueType = typeof groupElementsValue
        
-    // NOTE: MULTIPLE CARDS CANNOT BE DROPPED FROM FOUNDATION PILES, SO ONLY IN THE DROP PILE TO DROP PILE UNDO WILL MULTIPLE CARDS BE LOOKED FOR. 
+    
     if(valueType == 'number'){// MULTIPLE CARD UNDO
   console.log('multiple cards undo')
   console.log(` group elements: ${groupElementsValue}`)
@@ -3262,108 +2802,41 @@ tempGroupObjectsArray.shift()
   // ------- APPENDING ALL CARDS BACK TO ORIGIN -------------------
 
       // CREATE DOCUMENT FRAGMENT TO APPEND MULTIPLE CARDS 
- 
+      let df = new DocumentFragment()
        // to hold cards to be removed from destination pile
       let realElements = []
       //LOOP THROUGH DESTINATION PILE 
 destinationPileElement.childNodes.forEach((child, childIndex) =>{
   console.log(child)
 
-  // FROM FIRST CARD ONWARD push card elements to real elements array so that they can then be appended to the wrapper which will be created to hold the cards while they are translated back to the origin pile
+  // FROM FIRST CARD ONWARD 
   if(childIndex >= groupStartIndex){
+    // CREATE CLONE CARD
+    let newChild = child.cloneNode(false)
+    // PUSH CLONE TO TEMPORARY ELEMENT ARRAY 
+    tempGroupElementsArr.push(newChild)
+     // PUSH CARD HTML NODE TO REAL ELEMENT ARRAY 
     realElements.push(child)
   }
 
+ // APPEND EACH CLONE FROM TEMPORARY ELEMENT TO DOCUMENT FRAGMENT
+  tempGroupElementsArr.forEach(child =>{
+    console.log(child)
+df.append(child)
+// CHECK DOCUMENT FRAGEMENT
+console.log(df)
+console.log(realElements)
+
+
+// STLYING NOTE: drop pile to drop pile undo so cards don't need their styling class changed. 
+  })
 
 })
-
-
-
-
-// I THINK THAT THE WRAPPER NEEDS TO BE CREATED AND APPENDED 'AFTER' THE ELEMENTS HAVE BEEN PUSHED TO THE REAL ELEMENTS ARRAY, OTHERWISE THE ELEMENTS PUSHED TO THE ARRAY WILL INCLUDE THE WRAPPER; AND THAT'S NOT THE INTENDED BEHAVIOUR - -----------------------------------------------------------------------------------------------------------------------------
-
-// create wrapper; 
-let newWrapper = document.createElement('div')
-// correctly the wrapper should be inserted to the DESTINATION rather than the origin
-let wrapperParent = groupStartCard.parentNode
-
-// use end card object width as a guide for the wrapper width
-newWrapper.setAttribute('width', groupStartCard.getBoundingClientRect().width)
-
-newWrapper.setAttribute('id', 'temp-wrapper')
-
-
-// set wrapper height so it will grow to fit the number of cards appeneded to it. 
-newWrapper.style.cssText = 'height: fit-content;'
-
-
-// insert wrapper and then check destination pile to see it has worked. 
-wrapperParent.insertBefore(newWrapper, groupStartCard)
-realElements.forEach(child =>{
-  newWrapper.append(child)
-})
-
-
-
-
-console.log('checking wrapper element has appended and elements are appended to it')
-console.log(wrapperParent)
-// elements successfully appended to the wrapper...  NOW IT'S A MATTER OF GETTING ORIGIN POSITION DETAILS AND WRAPPER POSITION DETAILS. 
-let wrapperPositions = newWrapper.getBoundingClientRect()
-let wrapperPositionObj = {
-  'x': wrapperPositions.x,
-  'y': wrapperPositions.y
-}
-
-
-// get origin pile positions
-let originPositions = originPileElement.getBoundingClientRect()
-// create an object for the positions
-let originPositionObj = {
-  'x': originPositions.x,
-  'bottom': originPositions.bottom
-}
-
-let xDistance = originPositionObj.x - wrapperPositionObj.x +17
-let yDistance = originPositionObj.bottom - wrapperPositionObj.y
-
-console.log('wrapper positions')
-console.log(wrapperPositionObj)
-
-console.log('distances: x, y')
-console.log(xDistance, yDistance)
-
-// ADD TRANSITIONS AND TRANSLATE TO WRAPPER
-newWrapper.setAttribute('class', 'card-transition duration-undo')
-
-// set translation
-newWrapper.style.transform =  `translate(${xDistance}px, ${yDistance}px)`
-
-// append the wraper to the origin pile
-setTimeout(() => {
-
-  // reset translation
-newWrapper.style.transform =  `translate(${0}px, ${0}px)`
-  originPileElement.append(newWrapper)
-
-  // REMOVE WRAPPER - while new wrapper has a first child
-  while (newWrapper.firstChild){
-    // on the origin element insert the wrapper's first child, before the new wrapper
-    originPileElement.insertBefore(newWrapper.firstChild, newWrapper);
-  } 
-
-  // when there are no more elements in the wrapper
-  if(newWrapper.childNodes.length < 1){
-    // delete the wrapper from the pile
-    originPileElement.removeChild(newWrapper);
-    }
-
-
-}, 510);
-// END OF TRANSFORM/TRANSLATE FOR MULTIPLE CARDS TO NON-EMPTY PILE: ----------------------------------------------------------------------------------------------------------------------------------
+// APPEND DOCUMENT FRAGMENT TO ORIGIN PILE
+originPileElement.append(df)
 tempGroupElementsArr = []
 
-realElements = []
+
 // -------  END OF APPENDING ALL CARDS BACK TO ORIGIN -------------
 // forgotten to remove the end card elements from destination. 
 // -- ALL TRACKING COMPLETE REPOSITIONING; REMOVE CARD ELEMENTS
@@ -3390,8 +2863,7 @@ function removeCardElements(howMany){
 
   /* there are three possible scenarios here
   1. card is a king so may have moved to the origin from elsewhere
-  2. card is a king but and was the and originated in the pile
-  3. card is not a king and so MUST have originated in the pile and therefore will not have a history */
+  2. card is not a king and could not have been placed in the origin so it could not have come from elsewhere. */
 
 
   // CREATE TEMPORARY ARRAY 
@@ -3480,64 +2952,11 @@ movedCardTracker.pop()
     
   }
 
-
-
-
-  // TRANSFORM /  TRANSLATE CODE --------------------------------------
-
-  // GET POSITIONS OF ORIGIN PILE AND CARD TO CALCULATE TRANSFORM:TRANSLATE - this is a foundation card returning to an empty drop pile
-
-// pile positions
-let originClientPositions = originPileElement.getBoundingClientRect()
-let originPositionObj = {
-  'x':originClientPositions.x,
-  'y':originClientPositions.y,
-  'right':originClientPositions.right,
-  'bottom':originClientPositions.bottom
-}
-
-// drop card positions
-let dropCardClientPositions = dropCard.getBoundingClientRect()
-let dropCardPositionsObj = {
-  'x':dropCardClientPositions.x,
-  'y':dropCardClientPositions.y, 
-  'right':dropCardClientPositions.right,
-  'bottom':dropCardClientPositions.bottom
-}
-
-
-console.log('drop card position details')
-console.log(dropCardClientPositions)
-// the y translaction can be calculated using the bottom of the foundation pile and the bottom of the card.  
-let yDistance = originPositionObj.bottom - dropCardPositionsObj.bottom
-
-let xDistance = originPositionObj.x - dropCardPositionsObj.x + 17
-
-    // card returning to foundation pile from drop pile, so card displays non-cascaded, which is how cards display on the foundation piles, set class attribute as below
-    dropCard.setAttribute('class', 'cardEl card-transition duration-undo')
-    dropCard.style.transform = `translate(${xDistance}px, ${yDistance}px)`
-    setTimeout(() => {
-      
-      // STLYING NOTE: foundation pile undone to drop pile so the styling class attribute has to change from 'foundationCardEl' to 'cardEl' as below; 
-
-
-      // don't set non-cascade until just before card appends which will hopefully drop the card ontop of the others because all of them have the foundationCardEl style class
-      dropCard.setAttribute('class', 'cardEl card-border')
-// remove the translation
-      dropCard.style.transform = `translate(${0}px, ${0}px)`
-      // RETURN / APPEND DROP CARD (to foundation pile)
-  originPileElement.append(dropCard)
-    }, 550);
-
-  // TRANSFORM TRANSLATE CODE : END ------------------------------
-  // STLYING NOTE: single card undo, drop pile to drop pile, so no need to change styling class
-
-
 // APPEND CARD HERE 
   originPileElement.append(dropCard)
 
 
-
+// STLYING NOTE: single card undo, drop pile to drop pile, so no need to change styling class
 }
   }
 
@@ -3579,10 +2998,7 @@ if(breadcrumbArray.length < 1){
 
 // DROP TO TARGET
 const drop = (event) =>{
-  console.log('logging drop event')
-console.log(event)
-
-
+// console.log(event)
 
 
 
@@ -3736,10 +3152,6 @@ console.log(event.target)
 
 // for foundation pile drops, we'll remove the 'cardEl' class and add the 'foundationCardEl' class, which can then be styled for the cards to sit directly on top of one another. 
 if(event.target.id.includes('foundation')){
-
-  // play foundation drop sound for any card 'dragge4d' to the foundation
-  foundationDropPlayer.play()
-
   console.log('target is foundation pile, change card class from cardEl to foundationCardEl')
   event.target.appendChild(object)
 styleFoundationElement(object, event.target)
@@ -4667,14 +4079,7 @@ undoBtn.style.cssText = 'display:none;'
 console.log(dropPileTracker)
 console.log(foundationTracker)
 console.log(breadcrumbArray)
-
 }
-
-
-if(breadcrumbArray.length > 0){
-  refreshBtn.style.cssText = "display:none;"
-}
-
 
   }
 else{
@@ -4707,114 +4112,67 @@ function useArrays(newdrop, newFoundation){
 
 // function for placing cards into solved state
 const placeAllCards = (map) =>{
+/*
+BROAD MOVEMENTS:
+-get the pile index of the map object under examination
+- using the correct pile get the card which corresponds to the object
+- append the card from the end of the drop pile to the end of the foundation pile
 
-  let indexOfDropPile;
+*/
+
+
+// function for dropping cards to foundation piles, one card per second, to complete the game
+  function delayCardDrop(mapIndex, pileIndex, foundationIndex){
+    setTimeout(() => {
+// map index comes from the solution map, indicating which step in the path to solution is in process
+// pile index is for the parent of the card to be moved to foundation index
+// foundationIndex is used to decide where to append the card
+
+// change class to foundationCardEl, so that landing cards sit un-cascaded directly on top of previous card so only the most recently added card on the foundation pile is seen
+
+allPileElements[pileIndex].lastChild.setAttribute('class','foundationCardEl')
+      allFoundationElements[foundationIndex].append(allPileElements[pileIndex].lastChild)
+
+      console.log(i)
+    }, 1000*mapIndex);
+
+    if(mapIndex === solutionMapArray.length){
+      breadcrumbArray = []
+      undoBtn.style.cssText = 'display:none;'
+      solveBtn.style.cssText = 'display:none;'
+      alert('GAME IS COMPLETE')
+
+    }
+  }
+
+
+
+
+
+let indexOfDropPile;
 let foundationIndex;
 let dropObjValue;
+let dropCardValue;
+let mapIndex = 0;
+  map.forEach(step =>{
+    indexOfDropPile = step.drop_pile_index;
+    foundationIndex = step.foundation_pile_index
+    dropObjValue = step.moved_values.drop_pile_end_card
 
+    // get card 
+    console.log('map step')
+console.log(step)
+    console.log('card object')
+    console.log(allPileElements[indexOfDropPile].lastChild)
+// console.log(allPileElements[dropPileIndex])
+console.log('foundation pile to have card appended')
+console.log(allFoundationElements[foundationIndex])
+mapIndex++
+delayCardDrop(mapIndex, indexOfDropPile, foundationIndex)
+// append card to foundation pile
 
-
-
-function moveCard(mapIndex){
-
-
-let mapDetails = map[mapIndex]
-
-// only  if index retruns a map object
-if(mapDetails){
-
-// get drop pile and foundation index as well as card value 
-indexOfDropPile = mapDetails.drop_pile_index;
-foundationIndex = mapDetails.foundation_pile_index
-dropObjValue = mapDetails.moved_values.drop_pile_end_card
-
-// get card object using index
-
-let cardObject = allPileElements[indexOfDropPile].lastChild
-
-
-// add class for transitions so the card can change position
-cardObject.setAttribute('class','cardEl card-bordercard-transition duration-1')
-
-// GET X/Y VALUES OF END CARD AND DESTINATION FOUNDATION
-    // get viewport position information of card 
-    let cardCoords = cardObject.getBoundingClientRect()
-
-    
-    // object for x/y coordinates of card 
-    let cardXYObj = {
-      'x':cardCoords.x,
-      'y':cardCoords.y
-    }
-
-    // get viewport position of foundation 
-let foundationCoords = allFoundationElements[foundationIndex].getBoundingClientRect()
-
-// object for x/y coordinates of card
-let foundationXYObj = {
-'x':foundationCoords.x,
-'y':foundationCoords.y
-}   
-
-
-
-// CALCULATE CARD X/Y TRANSLATION REQUIREMENTS
-let xTranslation = foundationXYObj.x - cardXYObj.x + 30
-let yTranslation = foundationXYObj.y - cardXYObj.y  +30 
-
-cardObject.style.transform = `translate(${xTranslation}px, ${yTranslation}px)`
-swooshSound.play()
-
-
-
-// if current index argument is not the highest index of the map array
-// if(mapIndex < map.length -1)
-if(mapIndex < map.length)
-{
-
-
-// wait two seconds, then increment index, and re-run function with next index 
-setTimeout(() => {
-  // just prior to appending card change style class to that which removes its cascade height so it sits directly on top of the previous card. 
-  cardObject.setAttribute('class', 'foundationCardEl')
-
-  // also, revert the translation back to zero for both x and y. The purpose of translation is for the visual effect of moving the card from the drop pile to the foundation pile, but when the card is appended to the foundation pile, if the translations are still on it, then it will sit X pixels and Y pixels outside of the intended position; the x/y translations need to be zero once the card sits in its destination
-  cardObject.style.transform = `translate(${0}px, ${0}px)`
-  
-  
-  // now append the card. Because of the tiny duration between reset of translations and card append; the movement that the card will do back to the end of a drop pile from the foundation prior to getting appended will be imperceptible. I assume this in occuring within a few thousandths of a second. 
-  foundationDropAuto.play()
-  allFoundationElements[foundationIndex].appendChild(cardObject)
-
-  // increase the index to get the next step in the map array and repeat the process for the next card (if the index is still a valid index for the array)
-  mapIndex ++
-  moveCard(mapIndex)
-}, 1100);
-
-}else{
-console.log('mapping complete')
-
-
-
+  })
 }
-
-}else{
-// refresh page 
-solveBtn.style.display = 'none'
-refreshBtn.style.cssText = "display:block;"
-}
-
-
-}
-
-moveCard(0)
-
-
-
-
-
-}
-
 // AUTO-COMPLETE CHECK TO SEE IF ALL CARDS ARE FACE UP
 function comparePileCard(fPile, index){
 
@@ -5071,7 +4429,7 @@ let pileId = pile.id // we need pile id to grab element properly
 // switch id and use the pile that has matching id as element for start and end children in new range. 
 
   
-let tempPile;
+
 
 switch(pileId){
 case pileOne.id: tempPile = pileOne
@@ -5095,19 +4453,10 @@ break;
 
 let end = pile.childNodes.length;
 let testRange = new Range() // create new range
-// set parent pile and starting card's index
-testRange.setStart(tempPile, start); 
-
-// set 'element, this is actually the length of the pile, so the number is greater than the value of the last child index, so the last index is automatically selected as the end value'
-testRange.setEnd(tempPile, end);
-
-
-
- // clear existing selection if any
-  document.getSelection().removeAllRanges();
-
-   // set  new range
- document.getSelection().addRange(testRange);
+testRange.setStart(tempPile, start); // set 'element, start child'
+testRange.setEnd(tempPile, end);// set 'element, end child'
+  document.getSelection().removeAllRanges(); // clear existing selection if any
+ document.getSelection().addRange(testRange); // select new range
  // $(tempPile).multidraggable() // make pile multidraggable
 
 //  console.log('origin pile')
@@ -5115,10 +4464,8 @@ testRange.setEnd(tempPile, end);
 //  console.log('testRange')
 //  console.log(testRange.commonAncestorContainer.childNodes)
 
-// get the first card element from the array containing all card elements
   let firstCard = object[0]
-  // use parse the integer from the card id and use it as the id for the wrapper
-  let wrapperId = parseInt(firstCard.id)
+  let wrapperId = parseInt(object[0].id)
 
   // console.log('first card value - which is card id')
   // console.log(wrapperId)
@@ -5169,7 +4516,6 @@ let commandNothing = 0;
 
 // since this settimeout is causing some issues of the card disappearing for over a second when the mouse button is released, we might as well try to ditch the time out and use mouseup instead, that might actually work better.  I've had to jig this function quite a bit to get a reasonable timing from card pickup  to card drop or reject - still working on it
 
-// if mouse is currently held down
 if(mouseDownArr[0] === 0){
 // console.log('mouse down')
 
@@ -5180,7 +4526,7 @@ setTimeout(() => {
   
     for(i = 0; i<pile.childNodes.length; i++)
     { 
-    // because the string '.png' is part of all card id's, the minimum length of any card id is 4 characters, because all cards have at least one digit as part of their id. So if the id length is less than three, i.e. 1 or 2, then the child in the pile must be a wrapper, because the wrapper id is the integer parsed from the first card of the selection.  This is how the wrapper is identified.  if the id length is not less than 3, then the child must be a card. If an id of length < 3 is found then the command unwrap variable will be incrimented, otherwise the commandNothing variable with be incrimented.  If commandUnwrap is zero, it means that no wrapper was found on the pile
+    //  console.log(pile.childNodes[i].id.length)
   if(pile.childNodes[i].id.length < 3){
   commandUnwrap += pile.childNodes[i].id.length
   }else{
@@ -5188,15 +4534,13 @@ setTimeout(() => {
   }}
   
   // if commandUnwrap has no value then the auto reset go will not run, but if it does have a value then the reset function will run
-  if(commandUnwrap > 0){autoResetGo(pile,object,wrapper,commandUnwrap)}else{
-    // autoResetGo will only executed with the commandNothing argument if no wrapper was found
-    autoResetGo(pile,object,wrapper,commandNothing)}
+  if(commandUnwrap > 0){autoResetGo(pile,object,wrapper,commandUnwrap)}else{autoResetGo(pile,object,wrapper,commandNothing)}
 
 }, 3000);
 
 
 }else{
-// otherwise mouse has been released so wrapper needs to be unwrapped and cards need to stay in the pile of the original selection. 
+
   setTimeout(() => {
       
    
@@ -5258,6 +4602,16 @@ cardPile.addEventListener('mousedown', (event) => {
 
 
 let cardValue =  parseInt(target.id)
+// console.log('origin pile element below:')
+// console.log(parent)
+// console.log('origin pile name below:')
+// console.log(parent.id)
+if(event.target.length > 0){
+  // console.log('previous card')
+  // console.log(event.target.previousSibling)
+}else{
+  // console.log('no cards left in pile')
+}
 
 
 // getting the object of the clicked card from the tracking array. 
@@ -5266,8 +4620,8 @@ let cardObj
 pileNavigation.forEach(pile =>{
   if(pile == parent.id){
 pileIndex = pileNavigation.indexOf(pile)
-
-// GET TRACKING OBJECT OF SELECTED CARD
+// console.log('card objects in tracking subarray of origin pile (minus the moved card - unopened console element will show original number of cards in pile; but opened, the correct total will show')
+// console.log(dropPileTracker[pileIndex])
 dropPileTracker[pileIndex].forEach(card =>{
 if(card.primary_card.card === cardValue){
 cardObj = card
@@ -5280,35 +4634,24 @@ cardObj = card
 
 
 // THIS IS FOR CREATING THE DRAGGABLE GROUP
- // if draggable: true; get the HTML element
-if(attr == "true"){
-let totalSelected = 0;
-   // SEND THE PARENT ELEMENT TO SELECT ARRAY FOR LATER USE
-selectArray.push(parent)
+if(attr == "true"){ // if draggable: true; get the HTML element
+selectArray.push(parent) // THIS IS THE SELECTED PILE
+//$(cardPile).multidraggable()
+for(i=0; i < maxVal; i++){ // loop through pile's children (cards)
+if(children[i] == target){ // when child[i] is target card
 
-for(i=0; i < maxVal; i++){ // loop ALL of pile's children (cards)
- // when child[i] is target card
-if(children[i] == target){
-
-  // NOTE: there is probably a better way of doing this; i.e. getting the index of the child in the pile
 let j;
 for(j=i; j<maxVal; j++){ 
-  
 // loop through parent pile from child[j] to last child
-// style selected child and all others up to the end of the pile (this style creates a red outline offset of 0.1vw)
-  children[j].classList.add('multi-style')
-  totalSelected ++;
-   // push index of children to array where parent is at index zero
-selectArray.push(j)
-   // push children to dragId array
+  children[j].classList.add('multi-style')// style looped children
+selectArray.push(j) // push children to array
 dragIdArray.push(children[j])
 // console.log(dragIdArray)
 
 }}}
 
-// use number of children pushed to dragIdArray (that's the number of cards to the end of the pile, inclusive of the selected card - i.e. the total number of cards to be dragged).  Each card is added to a wrapper later; the number of cards is used as the number of cards selected for dragging 
-cardObj.total_selected = dragIdArray.length
 
+cardObj.total_selected = dragIdArray.length
 tempDragCardArr.push(cardObj)
 
 // console.log('breadcrumbs - last element is last card moved')

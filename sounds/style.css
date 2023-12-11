@@ -26,7 +26,6 @@ display: inline-block;
     margin-top: 0vw;
     border-width: 0.1vw;
     display: inline-block; 
-    box-shadow: 2px 2px 5px rgb(117, 117, 117);
 }
 
 .cardElWaste{
@@ -59,11 +58,7 @@ display: none;
 margin: auto;
 }
 
-#solve-btn, #shuffle-btn, #refresh-btn{background-color: rgb(41, 40, 40); font-weight: bold; width: 20%; height: auto; font-size: 25px; color:white; border-radius: 8px; margin: auto;}
-
-#solve-btn{background-color: rgb(41, 40, 40); }
-
-#refresh-btn{background-color: rgb(233, 77, 30); display: none; }
+#solve-btn, #shuffle-btn{background-color: rgb(41, 40, 40); font-weight: bold; width: 20%; height: auto; font-size: 25px; color:white; border-radius: 8px; margin: auto;}
 
 
 
@@ -180,7 +175,7 @@ padding-bottom: 5vw;
         border-top: 1px;
     opacity: 1;
     margin-top: 3vh;
-    padding: 17px;
+    padding: 1vw 2vw 4vw 2vw;
     border-style: solid;
     border-width: 1px;
     border-color: rgba(0, 0, 0, 0);
@@ -200,22 +195,12 @@ padding-bottom: 5vw;
     
     .enter{
     
-        outline: 4px solid rgb(14, 235, 32);
+        outline: 4px solid red;
         outline-offset: 2px;
     }
 
     
 
-    .card-transition{
-        transition-timing-function: ease-in-out;
-        }
-        .duration-1{
-            transition-duration: 1s;
-        }
-        
-        .duration-undo{
-            transition-duration: 0.5s;
-        }
 
 .multiple{
 
@@ -334,7 +319,7 @@ height: 2vw;
         margin-top: -1vw;
     width: 72vw;
      margin: auto;
-    padding-bottom: 17px;
+    padding-bottom: 2vw;
             }
 
     .remain-pile{
@@ -356,16 +341,6 @@ height: 2vw;
             background-image: url(./images/green\ background.png);
                   top: 8vh;  
                   padding-top: 15vh;    
-        }
-
-        .foundationCardEl{
-            position: absolute;
-            width: 5vw;
-            height: auto;
-            margin-top: 0vw;
-            border-width: 0.1vw;
-            display: inline-block; 
-        box-shadow: 2px 2px 5px rgb(117, 117, 117);
         }
     
 
