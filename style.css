@@ -148,7 +148,7 @@ background-repeat: no-repeat;
     border-radius: 8px;
     height: 12vw;
     margin-top: 0vw;
-    padding: 4vw;
+    padding: 20px;
    width: 9vw;
     margin:1vw;
     border-width: 1px;
@@ -175,7 +175,7 @@ padding-bottom: 5vw;
 
 /* styling for card piles*/
 .piles{
-    height: fit-content;
+ min-height: 15vw;
     width: 9vw;
         border-top: 1px;
     opacity: 1;

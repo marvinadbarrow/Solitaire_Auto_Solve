@@ -1221,6 +1221,7 @@ let xDistance = originPositionObj.x - dropCardPositionsObj.x + 17
       dropCard.setAttribute('class', 'foundationCardEl')
 // remove the translation
       dropCard.style.transform = `translate(${0}px, ${0}px)`
+      dropCard.removeAttribute('transform')
       // RETURN / APPEND DROP CARD (to foundation pile)
   originPileElement.append(dropCard)
     }, 550);
@@ -1551,6 +1552,7 @@ console.log('DETAILS FOR SMOOTHER FOUNDATION TO WASTE PILE UNDO')
       dropCard.setAttribute('class', 'cardElWaste card-border')
 // remove the translation
       dropCard.style.transform = `translate(${0}px, ${0}px)`
+      dropCard.removeAttribute('transform')
       // RETURN / APPEND DROP CARD (to foundation pile)
   originPileElement.append(dropCard)
     }, 550);
@@ -1768,6 +1770,7 @@ let xDistance = originPositionObj.x - dropCardPositionsObj.x + 12
       dropCard.setAttribute('class', 'cardElWaste card-border')
 // remove the translation
       dropCard.style.transform = `translate(${0}px, ${0}px)`
+      dropCard.removeAttribute('transform')
       // RETURN / APPEND DROP CARD (to foundation pile)
   originPileElement.append(dropCard)
   // just in case there's an old card left in place, check and remove the previoys one. 
@@ -1938,6 +1941,7 @@ let xDistance = originPositionObj.x - dropCardPositionsObj.x + 17
       dropCard.setAttribute('class', 'cardEl card-border')
 // remove the translation
       dropCard.style.transform = `translate(${0}px, ${0}px)`
+      dropCard.removeAttribute('transform')
       // RETURN / APPEND DROP CARD (to foundation pile)
   originPileElement.append(dropCard)
     }, 550);
@@ -2013,6 +2017,7 @@ let xDistance = originPositionObj.x - dropCardPositionsObj.x + 17
       dropCard.setAttribute('class', 'cardEl card-border')
 // remove the translation
       dropCard.style.transform = `translate(${0}px, ${0}px)`
+      dropCard.removeAttribute('transform')
       // RETURN / APPEND DROP CARD (to foundation pile)
   originPileElement.append(dropCard)
     }, 550);
@@ -2574,6 +2579,7 @@ let xDistance = originPositionObj.x - dropCardPositionsObj.x + 17
       dropCard.setAttribute('class', 'cardEl card-border')
 // remove the translation
       dropCard.style.transform = `translate(${0}px, ${0}px)`
+      dropCard.removeAttribute('transform')
       // RETURN / APPEND DROP CARD (to foundation pile)
   originPileElement.append(dropCard)
     }, 550);
@@ -2655,6 +2661,7 @@ let xDistance = originPositionObj.x - dropCardPositionsObj.x + 17
       dropCard.setAttribute('class', 'cardEl card-border')
 // remove the translation
       dropCard.style.transform = `translate(${0}px, ${0}px)`
+      dropCard.removeAttribute('transform')
       // RETURN / APPEND DROP CARD (to foundation pile)
   originPileElement.append(dropCard)
     }, 550);
@@ -2793,6 +2800,7 @@ let xDistance = originPositionObj.x - dropCardPositionsObj.x + 17
       dropCard.setAttribute('class', 'cardEl card-border')
 // remove the translation
       dropCard.style.transform = `translate(${0}px, ${0}px)`
+      dropCard.removeAttribute('transform')
       // RETURN / APPEND DROP CARD (to foundation pile)
   originPileElement.append(dropCard)
     }, 550);
@@ -3526,6 +3534,7 @@ let xDistance = originPositionObj.x - dropCardPositionsObj.x + 17
       dropCard.setAttribute('class', 'cardEl card-border')
 // remove the translation
       dropCard.style.transform = `translate(${0}px, ${0}px)`
+      dropCard.removeAttribute('transform')
       // RETURN / APPEND DROP CARD (to foundation pile)
   originPileElement.append(dropCard)
     }, 550);
@@ -4777,8 +4786,8 @@ let foundationXYObj = {
 
 
 // CALCULATE CARD X/Y TRANSLATION REQUIREMENTS
-let xTranslation = foundationXYObj.x - cardXYObj.x + 30
-let yTranslation = foundationXYObj.y - cardXYObj.y  +30 
+let xTranslation = foundationXYObj.x - cardXYObj.x + 20
+let yTranslation = foundationXYObj.y - cardXYObj.y  +20 
 
 cardObject.style.transform = `translate(${xTranslation}px, ${yTranslation}px)`
 swooshSound.play()
@@ -5006,7 +5015,7 @@ if(hasChildren > 0){
 // if true, give child nodes a variable so we can add or remove attributes and classes
 let children = wrapper.childNodes
 
-if(hasChildren > 1){
+if(hasChildren > 0){
 // console.log('multiple cards')
 // console.log('children')
 // console.log(children)
